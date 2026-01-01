@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "glucose_thresholds": {
+    "hypoglycemia": {"range": [0, 70], "severity": "high"},
+    "normal": {"range": [70, 140], "severity": "none"},
+    "hyperglycemia": {"range": [140, 200], "severity": "moderate"},
+    "severe_hyperglycemia": {"range": [200, 400], "severity": "critical"}
+  },
+  "caffeine_thresholds": {
+    "low": {"range": [0, 100], "effect": "mild"},
+    "moderate": {"range": [100, 200], "effect": "moderate"},
+    "high": {"range": [200, 400], "effect": "strong"},
+    "dangerous": {"range": [400, 10000], "effect": "risk"}
+  }
+}
