@@ -22,7 +22,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import brentq, root
 
-from src.core.models.base import PhysiologicalModel, SimulationInput, SimulationResult
+from .base import PhysiologicalModel, SimulationInput, SimulationResult
 
 
 def _auc(y: np.ndarray, x: np.ndarray) -> float:

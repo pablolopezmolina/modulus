@@ -1,41 +1,242 @@
 {
-  "metadata": {
-    "source": "CDC NHANES 2017-2020",
-    "description": "Population parameters for virtual individual generation",
-    "sampling_method": "Latin Hypercube Sampling",
-    "default_sample_size": 1000,
-    "version": "1.0.0"
+  "_metadata": {
+    "version": "1.0.0",
+    "description": "Population parameter distributions for MODULUS virtual population generator",
+    "sources": [
+      "NHANES 2017-2020 (CDC)",
+      "Dalla Man et al. 2007 - IEEE Trans Biomed Eng",
+      "Blanchard & Sawers 1983 - J Clin Pharmacol",
+      "Sachse et al. 1999 - Br J Clin Pharmacol (CYP1A2)",
+      "Butler et al. 1992 - Pharmacogenetics (CYP1A2 trimodal)"
+    ],
+    "target_population": "Healthy adults 18-65 years, European/North American",
+    "last_updated": "2025-01"
   },
+
   "demographics": {
     "age": {
-      "distribution": "normal",
+      "distribution": "truncated_normal",
       "mean": 38.0,
       "std": 12.0,
       "min": 18,
       "max": 65,
-      "unit": "years"
+      "unit": "years",
+      "source": "NHANES 2017-2020 adult population"
     },
     "sex": {
       "distribution": "categorical",
-      "categories": {"male": 0.49, "female": 0.51}
+      "categories": ["male", "female"],
+      "probabilities": [0.49, 0.51],
+      "source": "US Census demographics"
     },
-    "weight": {
-      "male": {"distribution": "normal", "mean": 88.8, "std": 19.5, "min": 50, "max": 150, "unit": "kg"},
-      "female": {"distribution": "normal", "mean": 76.4, "std": 18.9, "min": 45, "max": 140, "unit": "kg"}
+    "height_cm": {
+      "male": {
+        "distribution": "truncated_normal",
+        "mean": 175.4,
+        "std": 7.5,
+        "min": 150,
+        "max": 210,
+        "unit": "cm"
+      },
+      "female": {
+        "distribution": "truncated_normal",
+        "mean": 162.0,
+        "std": 6.8,
+        "min": 140,
+        "max": 195,
+        "unit": "cm"
+      },
+      "source": "NHANES 2017-2020"
+    },
+    "weight_kg": {
+      "male": {
+        "distribution": "truncated_normal",
+        "mean": 88.8,
+        "std": 19.5,
+        "min": 45,
+        "max": 180,
+        "unit": "kg"
+      },
+      "female": {
+        "distribution": "truncated_normal",
+        "mean": 76.4,
+        "std": 20.1,
+        "min": 40,
+        "max": 160,
+        "unit": "kg"
+      },
+      "source": "NHANES 2017-2020"
     }
   },
-  "metabolic_parameters": {
-    "fasting_glucose": {"distribution": "normal", "mean": 95.0, "std": 12.0, "min": 70, "max": 126, "unit": "mg/dL"},
-    "insulin_sensitivity": {"distribution": "beta", "alpha": 2.0, "beta": 2.0, "min": 0.3, "max": 1.5, "unit": "dimensionless"}
+
+  "glucose_metabolism": {
+    "fasting_glucose_mg_dl": {
+      "distribution": "truncated_normal",
+      "mean": 95.0,
+      "std": 10.0,
+      "min": 70,
+      "max": 126,
+      "unit": "mg/dL",
+      "notes": "Normal fasting glucose < 100; prediabetes 100-125; we cap at 126 for normal population",
+      "source": "Dalla Man 2007 (Gb=95 as reference), NHANES glucose data"
+    },
+    "fasting_insulin_mu_l": {
+      "distribution": "lognormal",
+      "mean_log": 2.3,
+      "std_log": 0.5,
+      "min": 2,
+      "max": 50,
+      "unit": "mU/L",
+      "notes": "Fasting insulin typically 5-25 mU/L, log-normal distribution reflects positive skew",
+      "source": "Dalla Man 2007 (Ib=25 as reference)"
+    },
+    "insulin_sensitivity_factor": {
+      "distribution": "beta_scaled",
+      "alpha": 2.5,
+      "beta": 2.5,
+      "min": 0.3,
+      "max": 1.7,
+      "notes": "Multiplier for baseline insulin sensitivity. 1.0 = reference (Dalla Man normal). Athletes ~1.4-1.7, insulin resistant ~0.3-0.6",
+      "source": "Derived from Dalla Man parameter variability + clinical data"
+    },
+    "correlations": {
+      "bmi_insulin_sensitivity": {
+        "coefficient": -0.45,
+        "notes": "Higher BMI correlates with lower insulin sensitivity"
+      },
+      "age_insulin_sensitivity": {
+        "coefficient": -0.25,
+        "notes": "Older age correlates with moderately lower insulin sensitivity"
+      }
+    }
   },
-  "dalla_man_parameters": {
-    "Vg": {"mean": 1.88, "std": 0.15, "unit": "dL/kg"},
-    "k1": {"mean": 0.065, "std": 0.010, "unit": "min^-1"},
-    "k2": {"mean": 0.079, "std": 0.012, "unit": "min^-1"}
+
+  "caffeine_metabolism": {
+    "cyp1a2_genotype": {
+      "distribution": "categorical",
+      "categories": ["slow", "normal", "fast"],
+      "probabilities": [0.12, 0.58, 0.30],
+      "source": "Butler 1992, Sachse 1999 - Caucasian population trimodal distribution"
+    },
+    "half_life_hours": {
+      "slow": {
+        "distribution": "truncated_normal",
+        "mean": 8.0,
+        "std": 1.5,
+        "min": 5.5,
+        "max": 12.0
+      },
+      "normal": {
+        "distribution": "truncated_normal",
+        "mean": 5.0,
+        "std": 1.0,
+        "min": 3.0,
+        "max": 8.0
+      },
+      "fast": {
+        "distribution": "truncated_normal",
+        "mean": 3.0,
+        "std": 0.6,
+        "min": 1.5,
+        "max": 5.0
+      },
+      "unit": "hours",
+      "source": "Blanchard 1983 (range 2.27-9.87h), Handbook of Methylxanthines"
+    },
+    "elimination_rate_per_min": {
+      "_notes": "kel = ln(2) / (half_life_hours * 60)",
+      "slow": {"mean": 0.00144, "std": 0.0003},
+      "normal": {"mean": 0.00231, "std": 0.0005},
+      "fast": {"mean": 0.00385, "std": 0.0008}
+    },
+    "habitual_caffeine_mg_day": {
+      "distribution": "mixture",
+      "components": [
+        {"weight": 0.15, "distribution": "constant", "value": 0, "label": "non-consumer"},
+        {"weight": 0.35, "distribution": "truncated_normal", "mean": 100, "std": 50, "min": 10, "max": 200, "label": "light"},
+        {"weight": 0.35, "distribution": "truncated_normal", "mean": 300, "std": 100, "min": 150, "max": 500, "label": "moderate"},
+        {"weight": 0.15, "distribution": "truncated_normal", "mean": 600, "std": 150, "min": 400, "max": 1000, "label": "heavy"}
+      ],
+      "unit": "mg/day",
+      "source": "NHANES dietary data, European caffeine consumption surveys"
+    },
+    "tolerance_effect": {
+      "notes": "Habitual consumers have ~20-40% reduced alertness response",
+      "reduction_factor_per_100mg_daily": 0.05,
+      "max_reduction": 0.40
+    }
   },
-  "caffeine_pk_parameters": {
-    "ka": {"mean": 4.0, "std": 1.0, "unit": "h^-1"},
-    "ke_base": {"mean": 0.138, "std": 0.025, "unit": "h^-1"},
-    "Vd": {"mean": 0.6, "std": 0.1, "unit": "L/kg"}
+
+  "lifestyle": {
+    "activity_level": {
+      "distribution": "categorical",
+      "categories": ["sedentary", "light", "moderate", "active", "very_active"],
+      "probabilities": [0.25, 0.30, 0.25, 0.15, 0.05],
+      "insulin_sensitivity_multiplier": {
+        "sedentary": 0.85,
+        "light": 0.95,
+        "moderate": 1.0,
+        "active": 1.15,
+        "very_active": 1.30
+      },
+      "source": "NHANES physical activity questionnaire"
+    },
+    "smoker": {
+      "distribution": "bernoulli",
+      "probability": 0.14,
+      "effects": {
+        "cyp1a2_induction_factor": 1.5,
+        "notes": "Smoking induces CYP1A2, increasing caffeine clearance by ~50%"
+      },
+      "source": "CDC smoking statistics 2020"
+    }
+  },
+
+  "derived_parameters": {
+    "bmi": {
+      "formula": "weight_kg / (height_cm / 100)^2",
+      "expected_range": [18.5, 40],
+      "categories": {
+        "underweight": [0, 18.5],
+        "normal": [18.5, 25],
+        "overweight": [25, 30],
+        "obese": [30, 100]
+      }
+    },
+    "body_surface_area_m2": {
+      "formula": "Du Bois: 0.007184 * weight_kg^0.425 * height_cm^0.725",
+      "notes": "Used for some pharmacokinetic scaling"
+    }
+  },
+
+  "subpopulation_presets": {
+    "athletes": {
+      "description": "Active, fit individuals",
+      "overrides": {
+        "activity_level": {"distribution": "categorical", "categories": ["active", "very_active"], "probabilities": [0.4, 0.6]},
+        "insulin_sensitivity_factor": {"distribution": "beta_scaled", "alpha": 4, "beta": 2, "min": 1.0, "max": 1.7}
+      }
+    },
+    "prediabetic": {
+      "description": "Individuals with impaired glucose tolerance",
+      "overrides": {
+        "fasting_glucose_mg_dl": {"distribution": "truncated_normal", "mean": 110, "std": 8, "min": 100, "max": 125},
+        "insulin_sensitivity_factor": {"distribution": "beta_scaled", "alpha": 2, "beta": 4, "min": 0.3, "max": 0.8}
+      }
+    },
+    "elderly": {
+      "description": "Adults 60-75 years",
+      "overrides": {
+        "age": {"distribution": "truncated_normal", "mean": 67, "std": 4, "min": 60, "max": 75},
+        "insulin_sensitivity_factor": {"distribution": "beta_scaled", "alpha": 2, "beta": 3, "min": 0.4, "max": 1.0}
+      },
+      "notes": "Caffeine half-life similar in elderly per Blanchard 1983, but higher variability"
+    },
+    "caffeine_naive": {
+      "description": "Non-habitual caffeine consumers",
+      "overrides": {
+        "habitual_caffeine_mg_day": {"distribution": "constant", "value": 0}
+      }
+    }
   }
 }

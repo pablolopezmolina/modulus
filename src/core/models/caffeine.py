@@ -3,7 +3,7 @@ from scipy.integrate import solve_ivp
 from dataclasses import dataclass, asdict
 from typing import Optional, Dict, Any
 
-from src.core.models.base import PhysiologicalModel, SimulationInput, SimulationResult
+from .base import PhysiologicalModel, SimulationInput, SimulationResult
 
 
 @dataclass(kw_only=True)
