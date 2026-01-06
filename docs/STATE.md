@@ -11,14 +11,14 @@
 ## RESUMEN EJECUTIVO
 
 ```
-FASE 0 (Anti-Frankenstein): ████████░░░░░░░░░░░░  66% 🔨 EN PROGRESO
-FASE 1 (24h Engine):        ░░░░░░░░░░░░░░░░░░░░   0%
+FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
+FASE 1 (24h Engine):        ░░░░░░░░░░░░░░░░░░░░   0%  🔨 SIGUIENTE
 FASE 2 (Pack 1 - €50k):     ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░   0%
 
-TOTAL PROGRESO:             ~22% (Capa 1 Foundation + Contratos + CI)
+TOTAL PROGRESO:             ~28% (Capa 1 Foundation + FASE 0 completa)
 ```
 
 ---
@@ -66,7 +66,7 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 
 ---
 
-## FASE 0: ANTI-FRANKENSTEIN 🔨
+## FASE 0: ANTI-FRANKENSTEIN ✅ COMPLETADA
 
 ### Sesión 0.1: Contratos Ejecutables ✅
 ```
@@ -103,23 +103,35 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 - Test falla si contracts/ importa de implementation ✅
 - Todo pasa en <2 segundos ✅
 
-### Sesión 0.3: Golden Scenarios Base 🔨 SIGUIENTE
+### Sesión 0.3: Golden Scenarios Base ✅
 ```
-[ ] tests/golden/test_gs01_ogtt.py
-[ ] tests/golden/test_gs02_coffee.py
-[ ] tests/golden/test_gs10_reproducibility.py
+[x] tests/golden/test_gs01_ogtt.py
+[x] tests/golden/test_gs02_coffee.py
+[x] tests/golden/test_gs10_reproducibility.py
 ```
+
+**Completado:** 2025-01-06
+**Tests:** 37 tests pasando (GS01: 11, GS02: 14, GS10: 12)
+**Verificado:**
+- GS01: OGTT 75g glucose - peak 140-180 mg/dL, time to peak 30-60 min ✅
+- GS02: Coffee 100mg - Cmax 1.5-2.5 mg/L, half-life 4-6h ✅
+- GS10: Reproducibilidad exacta (np.array_equal) ✅
+- Tolerancias calibradas contra modelo real ✅
 
 ---
 
-## FASE 1: 24H ENGINE 🔨
+## FASE 1: 24H ENGINE 🔨 SIGUIENTE
 
-### Semana 1: Timeline
+### Sesión 1.1: Event (dataclass + validación) 🔨 SIGUIENTE
 ```
 [ ] src/core/timeline/__init__.py
 [ ] src/core/timeline/event.py
-[ ] src/core/timeline/timeline.py
 [ ] tests/unit/test_event.py
+```
+
+### Sesión 1.2: Timeline (inmutable, ordenada)
+```
+[ ] src/core/timeline/timeline.py
 [ ] tests/unit/test_timeline.py
 ```
 
@@ -230,9 +242,11 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | `tests/unit/test_contracts.py` | ✅ | 34 tests |
 | `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
 | `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
-| `tests/golden/` | ❌ | Por crear |
+| `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests |
+| `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests |
+| `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests |
 
-**Total:** 54 tests pasando
+**Total:** 91 tests pasando
 
 ---
 
@@ -249,7 +263,7 @@ modulus/
 │   ├── MASTER_PROMPT.md     ✅
 │   ├── GOLDEN_SCENARIOS.md  ✅
 │   ├── BUSINESS_MODEL.md    ✅
-│   └── ENVIRONMENT.md       ✅ NUEVO (Sesión 0.2)
+│   └── ENVIRONMENT.md       ✅
 │
 ├── data/
 │   └── reference/
@@ -269,16 +283,16 @@ modulus/
 │   │   │   └── results.py   ✅
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
-│   │   ├── timeline/        ❌
-│   │   ├── state/           ❌
-│   │   ├── compounds/       ❌
-│   │   ├── interactions/    ❌
-│   │   ├── simulation/      ❌
+│   │   ├── timeline/        ❌ (Fase 1)
+│   │   ├── state/           ❌ (Fase 1)
+│   │   ├── compounds/       ❌ (Fase 2)
+│   │   ├── interactions/    ❌ (Fase 3)
+│   │   ├── simulation/      ❌ (Fase 1)
 │   │   ├── engine.py        ✅
 │   │   └── adapters.py      ✅
 │   │
-│   ├── analysis/            ❌
-│   ├── reporting/           ❌
+│   ├── analysis/            ❌ (Fase 2)
+│   ├── reporting/           ❌ (Fase 1)
 │   └── api/
 │       └── main.py          ✅
 │
@@ -287,14 +301,17 @@ modulus/
 │   ├── unit/
 │   │   ├── __init__.py      ✅
 │   │   ├── test_contracts.py ✅ 34 tests
-│   │   └── test_sanity.py    ✅ 9 tests (heredado)
+│   │   └── test_sanity.py    ✅ 9 tests
 │   ├── integration/
-│   │   ├── __init__.py      ✅ (Sesión 0.2)
+│   │   ├── __init__.py      ✅
 │   │   └── test_dependency_rules.py ✅ 11 tests
 │   └── golden/
-│       └── __init__.py      ✅
+│       ├── __init__.py      ✅
+│       ├── test_gs01_ogtt.py ✅ 11 tests
+│       ├── test_gs02_coffee.py ✅ 14 tests
+│       └── test_gs10_reproducibility.py ✅ 12 tests
 │
-├── Makefile                 ✅ (actualizado 0.2)
+├── Makefile                 ✅
 ├── pyproject.toml           ✅
 ├── requirements.txt         ✅
 └── requirements-dev.txt     ✅
@@ -304,20 +321,28 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 0, Sesión 0.3: Golden Scenarios Base**
+**FASE 1, Sesión 1.1: Event (dataclass + validación)**
 
 ```
-OBJETIVO: 3 escenarios canónicos que siempre deben pasar
+OBJETIVO: Crear el tipo Event para el Timeline Engine
 
 ARCHIVOS A CREAR:
-- tests/golden/test_gs01_ogtt.py (glucosa sola)
-- tests/golden/test_gs02_coffee.py (cafeína sola)
-- tests/golden/test_gs10_reproducibility.py (determinismo)
+- src/core/timeline/__init__.py
+- src/core/timeline/event.py
+- tests/unit/test_event.py
+
+ESPECIFICACIÓN:
+- @dataclass(frozen=True) Event
+- Campos: timestamp_minutes, event_type, payload
+- Tipos: "ingestion" | "meal" | "exercise" | "sleep"
+- Validación: timestamp en [0, 1440], tipos válidos
+- Métodos: to_dict(), from_dict()
 
 CRITERIOS DE ÉXITO:
-- Los 3 escenarios pasan con código actual (v1)
-- Tolerancias definidas y documentadas
-- Cualquier cambio que rompa estos tests es bug
+- Event es frozen dataclass (inmutable)
+- Validación de timestamp y event_type
+- Tests unitarios pasan
+- make check pasa
 ```
 
 ---
@@ -329,3 +354,4 @@ CRITERIOS DE ÉXITO:
 | 2025-01-04 | - | Estado inicial v3.0. Capa 1 heredada de v1. |
 | 2025-01-06 | 0.1 | ✅ Contratos ejecutables: Event, PhysiologicalState, SimulationResult. 34 tests. |
 | 2025-01-06 | 0.2 | ✅ CI Local: Makefile (python3), dependency rules, ENVIRONMENT.md. 54 tests total. |
+| 2025-01-06 | 0.3 | ✅ Golden Scenarios: GS01 (OGTT), GS02 (Coffee), GS10 (Reproducibility). 91 tests total. **FASE 0 COMPLETADA.** |
