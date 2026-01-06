@@ -1,1 +1,2 @@
-"""MODULUS package"""
+# MODULUS - Decision & Compliance OS
+# src package

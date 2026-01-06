@@ -1,39 +1,18 @@
-# Core Scientific Computing
-numpy>=1.24.0,<2.0.0
-scipy>=1.10.0,<2.0.0
-pandas>=2.0.0,<3.0.0
+# MODULUS - Main Dependencies
+# Version: 3.0
 
-# Web Framework
-fastapi>=0.104.0,<1.0.0
-uvicorn[standard]>=0.24.0,<1.0.0
-python-multipart>=0.0.6
-pydantic>=2.0.0,<3.0.0
-pydantic-settings>=2.0.0
+# Core científico
+numpy>=1.24
+scipy>=1.10
+pandas>=2.0
 
-# Data Validation
-python-dotenv>=1.0.0
+# Validación y tipos
+pydantic>=2.0
 
-# Visualization
-matplotlib>=3.7.0,<4.0.0
-seaborn>=0.12.0
+# API
+fastapi>=0.100
+uvicorn>=0.22
 
-# PDF Generation
-reportlab>=4.0.0
-Pillow>=10.0.0
-
-# Storage & Caching
-aiofiles>=23.0.0
-
-# Testing
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-pytest-cov>=4.1.0
-httpx>=0.25.0
-
-# Code Quality
-black>=23.0.0
-flake8>=6.0.0
-isort>=5.12.0
-
-# Excel support
-openpyxl>=3.1.0
+# Reporting (para futuras fases)
+matplotlib>=3.7
+reportlab>=4.0
