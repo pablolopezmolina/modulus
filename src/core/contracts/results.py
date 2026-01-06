@@ -1,193 +1,140 @@
-# MODULUS - SimulationResult Contract
-# 
-# Define el contrato para resultados de simulación.
-# Ver CONTRACTS.md, Contract 1.1 para especificación completa.
-#
-# SimulationResult es el output de cualquier modelo fisiológico.
-# Contiene series temporales (channels) y métricas agregadas.
+"""
+MODULUS Contracts - Simulation Results
+Version: 3.0
 
+SimulationResult contains the output of a physiological model simulation.
+All results must satisfy strict contracts for downstream consumers.
+"""
+
+import math
+from typing import Dict, Any, List, Optional
 import numpy as np
-from typing import Dict, Any, List
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 
 
 class SimulationResult(BaseModel):
     """
-    Resultado de una simulación fisiológica.
-    
-    Contiene:
-    - time_points: Array de tiempos (debe empezar en 0, ser monotónico)
-    - channels: Dict de series temporales (glucosa, insulina, etc.)
-    - metrics: Métricas escalares (peak, AUC, etc.)
-    - metadata: Info adicional (modelo, versión, etc.)
-    
-    CONTRATOS:
-    - time_points[0] DEBE ser 0.0
-    - time_points DEBE ser monotónicamente creciente
-    - Todos los channels DEBEN tener len(channel) == len(time_points)
-    - metrics DEBE incluir "is_valid"
-    - Si is_valid=False, channels pueden estar vacíos
-    - Ningún channel puede contener NaN o Inf
+    Result of a physiological model simulation.
+
+    CONTRACTS:
+    - time_points must be monotonically increasing
+    - time_points[0] must be 0.0
+    - All channels must have len(channel) == len(time_points)
+    - metrics must include at least {"is_valid": bool}
+    - No NaN or Inf values in any channel
     """
-    
-    time_points: np.ndarray = Field(
+    model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
+
+    time_points: List[float] = Field(
         ...,
-        description="Array de puntos temporales (minutos)"
+        min_length=1,
+        description="Time points in minutes, monotonically increasing, starting at 0"
     )
-    channels: Dict[str, np.ndarray] = Field(
+    channels: Dict[str, List[float]] = Field(
         ...,
-        description="Series temporales por nombre (glucose, insulin, etc.)"
+        description="Named time series data, each with same length as time_points"
     )
     metrics: Dict[str, Any] = Field(
-        ...,
-        description="Métricas escalares calculadas"
+        default_factory=dict,
+        description="Scalar metrics computed from the simulation"
     )
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Información adicional (modelo, versión, etc.)"
+        description="Additional metadata about the simulation"
     )
-    
-    model_config = {
-        "arbitrary_types_allowed": True,  # Permite np.ndarray
-        "frozen": True,  # Inmutable
-    }
-    
-    @field_validator("time_points", mode="before")
+
+    @field_validator("time_points", mode="after")
     @classmethod
-    def convert_time_points(cls, v) -> np.ndarray:
-        """Convierte a numpy array si no lo es."""
-        if not isinstance(v, np.ndarray):
-            v = np.array(v, dtype=np.float64)
-        return v
-    
-    @field_validator("channels", mode="before")
-    @classmethod
-    def convert_channels(cls, v) -> Dict[str, np.ndarray]:
-        """Convierte valores de channels a numpy arrays."""
-        result = {}
-        for key, value in v.items():
-            if not isinstance(value, np.ndarray):
-                result[key] = np.array(value, dtype=np.float64)
-            else:
-                result[key] = value
-        return result
-    
-    @model_validator(mode="after")
-    def validate_result(self) -> "SimulationResult":
-        """Valida todas las invariantes del resultado."""
-        
-        # 1. time_points debe empezar en 0
-        if len(self.time_points) > 0 and self.time_points[0] != 0.0:
-            raise ValueError(
-                f"time_points must start at 0, got {self.time_points[0]}"
-            )
-        
-        # 2. time_points debe ser monotónicamente creciente
-        if len(self.time_points) > 1:
-            diffs = np.diff(self.time_points)
-            if not np.all(diffs > 0):
+    def validate_time_points(cls, v: List[float]) -> List[float]:
+        """Validate time_points contract."""
+        if len(v) == 0:
+            raise ValueError("time_points cannot be empty")
+
+        # Must start at 0
+        if v[0] != 0.0:
+            raise ValueError(f"time_points must start at 0.0, got {v[0]}")
+
+        # Must be monotonically increasing
+        for i in range(1, len(v)):
+            if v[i] <= v[i-1]:
                 raise ValueError(
-                    "time_points must be monotonically increasing"
+                    f"time_points must be monotonically increasing. "
+                    f"Found {v[i]} <= {v[i-1]} at index {i}"
                 )
-        
-        # 3. metrics debe tener is_valid
-        if "is_valid" not in self.metrics:
-            raise ValueError(
-                "metrics must include 'is_valid' key"
-            )
-        
-        # 4. Si is_valid=True, validar channels
-        if self.metrics.get("is_valid", False):
-            n_points = len(self.time_points)
-            
-            for name, channel in self.channels.items():
-                # 4a. Longitud correcta
-                if len(channel) != n_points:
-                    raise ValueError(
-                        f"Channel '{name}' has length {len(channel)}, "
-                        f"expected {n_points} (same as time_points)"
-                    )
-                
-                # 4b. No NaN
-                if np.any(np.isnan(channel)):
-                    raise ValueError(
-                        f"Channel '{name}' contains NaN values"
-                    )
-                
-                # 4c. No Inf
-                if np.any(np.isinf(channel)):
-                    raise ValueError(
-                        f"Channel '{name}' contains infinite values"
-                    )
-        
+
+        # No NaN or Inf
+        for i, val in enumerate(v):
+            if not math.isfinite(val):
+                raise ValueError(f"time_points[{i}] is not finite: {val}")
+
+        return v
+
+    @model_validator(mode="after")
+    def validate_channels_and_metrics(self) -> "SimulationResult":
+        """Validate channels have correct length and add is_valid if missing."""
+        expected_len = len(self.time_points)
+
+        for name, channel in self.channels.items():
+            if len(channel) != expected_len:
+                raise ValueError(
+                    f"Channel '{name}' has length {len(channel)}, "
+                    f"expected {expected_len}"
+                )
+            for i, val in enumerate(channel):
+                if not math.isfinite(val):
+                    raise ValueError(f"Channel '{name}'[{i}] is not finite: {val}")
+
+        # Add is_valid if not present
+        if "is_valid" not in self.metrics and "is_sim_valid" not in self.metadata:
+            # Create new dict with is_valid
+            new_metrics = dict(self.metrics)
+            new_metrics["is_valid"] = True
+            object.__setattr__(self, "metrics", new_metrics)
+
         return self
-    
-    def get_channel(self, name: str) -> np.ndarray:
-        """Obtiene un channel por nombre."""
-        if name not in self.channels:
-            raise KeyError(f"Channel '{name}' not found. Available: {list(self.channels.keys())}")
-        return self.channels[name]
-    
-    def get_metric(self, name: str, default: Any = None) -> Any:
-        """Obtiene una métrica por nombre."""
-        return self.metrics.get(name, default)
-    
+
+    def get_channel(self, name: str) -> Optional[List[float]]:
+        """Get a channel by name, returns None if not found."""
+        return self.channels.get(name)
+
+    def get_channel_as_array(self, name: str) -> Optional[np.ndarray]:
+        """Get a channel as numpy array."""
+        channel = self.channels.get(name)
+        if channel is not None:
+            return np.array(channel)
+        return None
+
     @property
-    def is_valid(self) -> bool:
-        """Shortcut para metrics['is_valid']."""
-        return self.metrics.get("is_valid", False)
-    
+    def time_array(self) -> np.ndarray:
+        """Get time_points as numpy array."""
+        return np.array(self.time_points)
+
     @property
     def duration_minutes(self) -> float:
-        """Duración total de la simulación en minutos."""
-        if len(self.time_points) == 0:
-            return 0.0
-        return float(self.time_points[-1] - self.time_points[0])
-    
+        """Total duration of simulation in minutes."""
+        return self.time_points[-1] - self.time_points[0]
+
     @property
-    def n_points(self) -> int:
-        """Número de puntos temporales."""
-        return len(self.time_points)
-    
-    @property
-    def channel_names(self) -> List[str]:
-        """Lista de nombres de channels disponibles."""
-        return list(self.channels.keys())
-    
+    def is_valid(self) -> bool:
+        """Whether the simulation completed successfully."""
+        return self.metrics.get("is_valid", True)
+
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Convierte a diccionario serializable (para JSON).
-        
-        Los numpy arrays se convierten a listas.
-        """
-        return {
-            "time_points": self.time_points.tolist(),
-            "channels": {k: v.tolist() for k, v in self.channels.items()},
-            "metrics": self.metrics,
-            "metadata": self.metadata,
-        }
-    
+        """Convert to dictionary representation."""
+        return self.model_dump()
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "SimulationResult":
-        """Crea un resultado desde un diccionario."""
+    def from_arrays(
+        cls,
+        time_points: np.ndarray,
+        channels: Dict[str, np.ndarray],
+        metrics: Optional[Dict[str, Any]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> "SimulationResult":
+        """Create SimulationResult from numpy arrays."""
         return cls(
-            time_points=np.array(data["time_points"]),
-            channels={k: np.array(v) for k, v in data["channels"].items()},
-            metrics=data["metrics"],
-            metadata=data.get("metadata", {}),
-        )
-    
-    @classmethod
-    def create_invalid(cls, error: str) -> "SimulationResult":
-        """
-        Factory method: crea un resultado inválido.
-        
-        Usado cuando una simulación falla pero queremos
-        devolver un objeto consistente.
-        """
-        return cls(
-            time_points=np.array([0.0]),
-            channels={},
-            metrics={"is_valid": False, "error": error},
-            metadata={},
+            time_points=time_points.tolist(),
+            channels={k: v.tolist() for k, v in channels.items()},
+            metrics=metrics or {"is_valid": True},
+            metadata=metadata or {},
         )

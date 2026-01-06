@@ -1,23 +1,24 @@
 # MODULUS — Development State
-# Last Updated: 2025-01-04
+# Last Updated: 2025-01-06
 #
 # ⚠️  ACTUALIZAR DESPUÉS DE CADA SESIÓN DE DESARROLLO
 # ⚠️  EL LLM DEBE LEER ESTO PARA SABER QUÉ ESTÁ HECHO
 #
 # 📌 VERSIÓN: 3.0 (Decision & Compliance OS)
 # 📌 OBJETIVO: Pack 1 vendible (€50k) en Semana 8
+# 📌 GIT: Para subir cambios usar `git push origin main`
 
 ## RESUMEN EJECUTIVO
 
 ```
-FASE 0 (Anti-Frankenstein): ░░░░░░░░░░░░░░░░░░░░   0% 🔨 SIGUIENTE
+FASE 0 (Anti-Frankenstein): ████████░░░░░░░░░░░░  66% 🔨 EN PROGRESO
 FASE 1 (24h Engine):        ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 2 (Pack 1 - €50k):     ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░   0%
 
-TOTAL PROGRESO:             ~15% (Capa 1 Foundation heredada de v1)
+TOTAL PROGRESO:             ~22% (Capa 1 Foundation + Contratos + CI)
 ```
 
 ---
@@ -67,26 +68,43 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 
 ## FASE 0: ANTI-FRANKENSTEIN 🔨
 
-### Sesión 0.1: Contratos Ejecutables
+### Sesión 0.1: Contratos Ejecutables ✅
 ```
-[ ] src/core/contracts/__init__.py
-[ ] src/core/contracts/events.py
-[ ] src/core/contracts/state.py
-[ ] src/core/contracts/results.py
-[ ] tests/unit/test_contracts.py
-```
-
-### Sesión 0.2: CI Local
-```
-[ ] Makefile
-[ ] requirements-dev.txt
-[ ] tests/integration/test_dependency_rules.py
-[ ] pyproject.toml
+[x] src/core/contracts/__init__.py
+[x] src/core/contracts/events.py
+[x] src/core/contracts/state.py
+[x] src/core/contracts/results.py
+[x] tests/unit/test_contracts.py
 ```
 
-### Sesión 0.3: Golden Scenarios Base
+**Completado:** 2025-01-06
+**Tests:** 34 tests pasando
+**Verificado:**
+- Event rechaza timestamp < 0 y > 1440 ✅
+- PhysiologicalState rechaza glucose NaN/Inf/<20/>600 ✅
+- SimulationResult rechaza time_points que no empiezan en 0 ✅
+- Todos los tipos son inmutables (frozen) ✅
+
+### Sesión 0.2: CI Local + Dependency Rules ✅
 ```
-[ ] tests/golden/__init__.py
+[x] Makefile (funcionando con python3)
+[x] requirements-dev.txt
+[x] tests/integration/__init__.py
+[x] tests/integration/test_dependency_rules.py
+[x] pyproject.toml
+[x] docs/ENVIRONMENT.md
+```
+
+**Completado:** 2025-01-06
+**Tests:** 54 tests pasando (43 unit + 11 integration)
+**Verificado:**
+- `make check` ejecuta lint + typecheck + tests ✅
+- Test falla si core/ importa de api/ o reporting/ ✅
+- Test falla si contracts/ importa de implementation ✅
+- Todo pasa en <2 segundos ✅
+
+### Sesión 0.3: Golden Scenarios Base 🔨 SIGUIENTE
+```
 [ ] tests/golden/test_gs01_ogtt.py
 [ ] tests/golden/test_gs02_coffee.py
 [ ] tests/golden/test_gs10_reproducibility.py
@@ -197,25 +215,28 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | `data/reference/ingredients.json` | ❌ | Por crear |
 | `data/reference/interactions.json` | ❌ | Por crear |
 | `data/reference/glycemic_index.csv` | ✅ | Existe |
-| `Makefile` | ❌ | Por crear |
-| `requirements-dev.txt` | ❌ | Por crear |
-| `pyproject.toml` | ❌ | Por crear |
+| `Makefile` | ✅ | Actualizado en 0.2 (python3) |
+| `requirements.txt` | ✅ | Creado en 0.1 |
+| `requirements-dev.txt` | ✅ | Creado en 0.1 |
+| `pyproject.toml` | ✅ | Creado en 0.1 |
+| `docs/ENVIRONMENT.md` | ✅ | Creado en 0.2 |
 
 ---
 
 ## TESTS
 
-| Suite | Estado | Cobertura |
-|-------|--------|-----------|
-| `tests/unit/` | ⚠️ | Parcial (v1) |
-| `tests/integration/` | ❌ | Por crear |
+| Suite | Estado | Tests |
+|-------|--------|-------|
+| `tests/unit/test_contracts.py` | ✅ | 34 tests |
+| `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
+| `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
 | `tests/golden/` | ❌ | Por crear |
-| `tests/integration/test_contracts.py` | ❌ | Por crear |
-| `tests/integration/test_dependency_rules.py` | ❌ | Por crear |
+
+**Total:** 54 tests pasando
 
 ---
 
-## ESTRUCTURA DE CARPETAS OBJETIVO
+## ESTRUCTURA DE CARPETAS ACTUAL
 
 ```
 modulus/
@@ -228,7 +249,7 @@ modulus/
 │   ├── MASTER_PROMPT.md     ✅
 │   ├── GOLDEN_SCENARIOS.md  ✅
 │   ├── BUSINESS_MODEL.md    ✅
-│   └── Makefile             ✅ (template)
+│   └── ENVIRONMENT.md       ✅ NUEVO (Sesión 0.2)
 │
 ├── data/
 │   └── reference/
@@ -238,68 +259,65 @@ modulus/
 │       └── interactions.json       ❌
 │
 ├── src/
+│   ├── __init__.py          ✅
 │   ├── core/
-│   │   ├── models/          ✅ (glucose, caffeine, base)
-│   │   ├── population/      ✅ (person, generator, distributions)
-│   │   ├── timeline/        ❌ (event, timeline)
-│   │   ├── state/           ❌ (state, integrator)
-│   │   ├── compounds/       ❌ (profile, library, formulation)
-│   │   ├── interactions/    ❌ (interaction, graph)
-│   │   ├── simulation/      ❌ (day_simulator, population_day)
-│   │   ├── contracts/       ❌ (events, state, results)
+│   │   ├── __init__.py      ✅
+│   │   ├── contracts/       ✅ (Sesión 0.1)
+│   │   │   ├── __init__.py  ✅
+│   │   │   ├── events.py    ✅
+│   │   │   ├── state.py     ✅
+│   │   │   └── results.py   ✅
+│   │   ├── models/          ✅ (heredado v1)
+│   │   ├── population/      ✅ (heredado v1)
+│   │   ├── timeline/        ❌
+│   │   ├── state/           ❌
+│   │   ├── compounds/       ❌
+│   │   ├── interactions/    ❌
+│   │   ├── simulation/      ❌
 │   │   ├── engine.py        ✅
 │   │   └── adapters.py      ✅
 │   │
 │   ├── analysis/            ❌
-│   │   ├── metrics.py
-│   │   ├── risk.py
-│   │   ├── decision.py
-│   │   ├── claims.py
-│   │   ├── evidence.py
-│   │   ├── comparison.py
-│   │   └── recommendations.py
-│   │
 │   ├── reporting/           ❌
-│   │   ├── pdf_generator.py
-│   │   ├── charts.py
-│   │   ├── certificate.py
-│   │   └── bundle.py
-│   │
 │   └── api/
 │       └── main.py          ✅
 │
-└── tests/
-    ├── unit/                ⚠️
-    ├── integration/         ❌
-    └── golden/              ❌
+├── tests/
+│   ├── __init__.py          ✅
+│   ├── unit/
+│   │   ├── __init__.py      ✅
+│   │   ├── test_contracts.py ✅ 34 tests
+│   │   └── test_sanity.py    ✅ 9 tests (heredado)
+│   ├── integration/
+│   │   ├── __init__.py      ✅ (Sesión 0.2)
+│   │   └── test_dependency_rules.py ✅ 11 tests
+│   └── golden/
+│       └── __init__.py      ✅
+│
+├── Makefile                 ✅ (actualizado 0.2)
+├── pyproject.toml           ✅
+├── requirements.txt         ✅
+└── requirements-dev.txt     ✅
 ```
 
 ---
 
 ## PRÓXIMA SESIÓN
 
-**FASE 0, Sesión 0.1: Contratos Ejecutables**
+**FASE 0, Sesión 0.3: Golden Scenarios Base**
 
 ```
-OBJETIVO: Crear contratos Pydantic para Event, PhysiologicalState, SimulationResult
+OBJETIVO: 3 escenarios canónicos que siempre deben pasar
 
 ARCHIVOS A CREAR:
-- src/core/contracts/__init__.py
-- src/core/contracts/events.py
-- src/core/contracts/state.py
-- src/core/contracts/results.py
-- tests/unit/test_contracts.py
-
-ARCHIVOS NO TOCAR:
-- src/core/models/* (ya estable)
-- src/core/population/* (ya estable)
-- src/core/engine.py (ya estable)
+- tests/golden/test_gs01_ogtt.py (glucosa sola)
+- tests/golden/test_gs02_coffee.py (cafeína sola)
+- tests/golden/test_gs10_reproducibility.py (determinismo)
 
 CRITERIOS DE ÉXITO:
-- Event rechaza timestamp <0 o >1440
-- PhysiologicalState rechaza glucose NaN o <0
-- Todos los campos con tipos estrictos
-- Tests pasan
+- Los 3 escenarios pasan con código actual (v1)
+- Tolerancias definidas y documentadas
+- Cualquier cambio que rompa estos tests es bug
 ```
 
 ---
@@ -309,3 +327,5 @@ CRITERIOS DE ÉXITO:
 | Fecha | Sesión | Cambios |
 |-------|--------|---------|
 | 2025-01-04 | - | Estado inicial v3.0. Capa 1 heredada de v1. |
+| 2025-01-06 | 0.1 | ✅ Contratos ejecutables: Event, PhysiologicalState, SimulationResult. 34 tests. |
+| 2025-01-06 | 0.2 | ✅ CI Local: Makefile (python3), dependency rules, ENVIRONMENT.md. 54 tests total. |
