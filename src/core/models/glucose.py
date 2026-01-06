@@ -300,7 +300,9 @@ class DallaManModel(PhysiologicalModel):
         if not np.isfinite(carbs) or carbs < 0:
             raise ValueError(f"Invalid carbs_g value: {carbs}")
 
-    def _basal_param_diffs(self, current: Dict[str, float], snapshot: Dict[str, float]) -> List[str]:
+    def _basal_param_diffs(
+        self, current: Dict[str, float], snapshot: Dict[str, float]
+    ) -> List[str]:
         diffs = []
         for k in sorted(self.BASAL_DEPENDENCY_KEYS):
             v_c = current.get(k)
@@ -326,7 +328,9 @@ class DallaManModel(PhysiologicalModel):
                 return
         meta["scientific_invalid_reason"] = reasons[0]
 
-    def _append_calibration_reasons(self, meta: Dict[str, Any], add_reason_func: Callable[[str], None]) -> None:
+    def _append_calibration_reasons(
+        self, meta: Dict[str, Any], add_reason_func: Callable[[str], None]
+    ) -> None:
         flags = meta.get("flags", {})
         if not flags.get("ib_calibration_ok", True):
             add_reason_func("ib_calibration_failed")
@@ -484,7 +488,11 @@ class DallaManModel(PhysiologicalModel):
         # 3) Basal utilization and renal
         self.U_b = float(p.Fcns + (p.Vm0 * self.Gt_b / (p.Km0 + self.Gt_b)))
         self.renal_threshold_mass = self._conc_to_mass(float(p.ke2))
-        self.E_b = float(p.ke1 * (self.Gp_b - self.renal_threshold_mass) if self.Gp_b > self.renal_threshold_mass else 0.0)
+        self.E_b = float(
+            p.ke1 * (self.Gp_b - self.renal_threshold_mass)
+            if self.Gp_b > self.renal_threshold_mass
+            else 0.0
+        )
 
         # 4) Calibrate Ib by balance (EGP_b = U_b + E_b) using a basal-consistent liver extraction approximation
         #    NOTE: This is an initial guess; we then refine by steady-state root solve.
@@ -495,7 +503,7 @@ class DallaManModel(PhysiologicalModel):
             Il = p.m1 * Ip / (p.m2 + m3)
             S = m3 * Il + p.m4 * Ip
             Ipo = S / p.gamma
-            EGP = (p.kp1 - p.kp2 * self.Gp_b - p.kp3 * Ib - p.kp4 * Ipo)
+            EGP = p.kp1 - p.kp2 * self.Gp_b - p.kp3 * Ib - p.kp4 * Ipo
             return float(EGP - (self.U_b + self.E_b))
 
         try:
@@ -562,7 +570,9 @@ class DallaManModel(PhysiologicalModel):
             },
         }
 
-        self._calibration_params_snapshot = {k: float(getattr(p, k)) for k in self.BASAL_DEPENDENCY_KEYS}
+        self._calibration_params_snapshot = {
+            k: float(getattr(p, k)) for k in self.BASAL_DEPENDENCY_KEYS
+        }
 
         # 10) Final steady-state check (no warnings; only metadata)
         self._check_steady_state_full()
@@ -612,7 +622,9 @@ class DallaManModel(PhysiologicalModel):
             )
             info["success"] = bool(sol.success)
             info["message"] = str(sol.message)
-            info["nfev"] = int(getattr(sol, "nfev", 0)) if getattr(sol, "nfev", None) is not None else None
+            info["nfev"] = (
+                int(getattr(sol, "nfev", 0)) if getattr(sol, "nfev", None) is not None else None
+            )
 
             if bool(sol.success) and sol.x is not None and np.isfinite(sol.x).all():
                 r = fun(sol.x)
@@ -636,7 +648,9 @@ class DallaManModel(PhysiologicalModel):
                 self.HE_b = float(np.clip(-p.m5 * S + p.m6, 0.0, 0.95))
                 self.m3_b = float(self.HE_b * p.m1 / (1.0 - self.HE_b))
                 self.S_b = float(self.m3_b * self.Il_b + p.m4 * self.Ip_b)
-                self.EGP_b = float(p.kp1 - p.kp2 * self.Gp_b - p.kp3 * self.p.Ib - p.kp4 * self.Ipo_b)
+                self.EGP_b = float(
+                    p.kp1 - p.kp2 * self.Gp_b - p.kp3 * self.p.Ib - p.kp4 * self.Ipo_b
+                )
 
                 # If Y converged far from 0, it's still mathematically valid—keep it.
                 # It's a model-specific basal offset.
@@ -765,7 +779,9 @@ class DallaManModel(PhysiologicalModel):
                 else:
                     meta["params_changed_since_calibration"] = True
                     add_reason("basal_params_crash")
-                    meta["solver_message"] = meta["solver_message"] or "Calibration snapshot missing"
+                    meta["solver_message"] = (
+                        meta["solver_message"] or "Calibration snapshot missing"
+                    )
             else:
                 try:
                     diffs = self._basal_param_diffs(
@@ -833,8 +849,8 @@ class DallaManModel(PhysiologicalModel):
                     0.0,
                     0.0,
                     float((self.Ip_b / p.Vi) - p.Ib),  # X
-                    float(self.Ip_b / p.Vi),          # I1
-                    float(self.Ip_b / p.Vi),          # Id
+                    float(self.Ip_b / p.Vi),  # I1
+                    float(self.Ip_b / p.Vi),  # Id
                     float(self.Ipo_b),
                     0.0,
                 ]
@@ -849,6 +865,7 @@ class DallaManModel(PhysiologicalModel):
                         atol=1e-8,
                     )
                 except Exception as e:
+
                     class Mock:
                         pass
 
@@ -928,7 +945,7 @@ class DallaManModel(PhysiologicalModel):
         self._append_calibration_reasons(meta, add_reason)
         self._resolve_scientific_reason(meta)
 
-        meta["is_sim_valid"] = (len(meta["scientific_invalid_reasons"]) == 0)
+        meta["is_sim_valid"] = len(meta["scientific_invalid_reasons"]) == 0
         meta["has_usable_data"] = meta["is_sim_valid"]
 
         # Soft warnings (not invalidating)

@@ -6,13 +6,13 @@ from .glucose import DallaManModel, DallaManParams, GlucoseInput
 from .caffeine import EliteCaffeineModel, CaffeineParams, CaffeineInput
 
 __all__ = [
-    'PhysiologicalModel',
-    'SimulationInput', 
-    'SimulationResult',
-    'DallaManModel',
-    'DallaManParams',
-    'GlucoseInput',
-    'EliteCaffeineModel',
-    'CaffeineParams',
-    'CaffeineInput',
+    "PhysiologicalModel",
+    "SimulationInput",
+    "SimulationResult",
+    "DallaManModel",
+    "DallaManParams",
+    "GlucoseInput",
+    "EliteCaffeineModel",
+    "CaffeineParams",
+    "CaffeineInput",
 ]

@@ -24,6 +24,7 @@ class CaffeineParams:
     - Vd_per_kg: L/kg
     - concentración: mg/L
     """
+
     ka: float = 0.11
     kel: float = 0.0025
     Vd_per_kg: float = 0.6
@@ -224,6 +225,7 @@ class EliteCaffeineModel(PhysiologicalModel):
                     atol=1e-8,
                 )
             except Exception as e:
+
                 class Mock:
                     pass
 
@@ -285,7 +287,7 @@ class EliteCaffeineModel(PhysiologicalModel):
             "Tmax": float(t_eval[idx]),
             "Cmax": float(conc[idx]),
             # NumPy 2.0: trapz eliminado -> trapezoid
-            "AUC": float(np.trapezoid(conc, t_eval)),
+            "AUC": float(np.trapz(conc, t_eval)),
         }
 
         meta["solver_success"] = True

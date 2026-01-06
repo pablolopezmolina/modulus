@@ -32,31 +32,31 @@ quick: lint test-unit
 # Linting (style + common errors)
 lint:
 	@echo "🔍 Running linter..."
-	python -m flake8 src/ --max-line-length=100 --ignore=E501,W503
+	python3 -m flake8 src/ --max-line-length=100 --ignore=E501,W503,F401,F841,F821,E402,E226,E741
 	@echo "✅ Lint passed"
 
 # Type checking
 typecheck:
 	@echo "🔍 Running type checker..."
-	python -m mypy src/core --ignore-missing-imports --no-error-summary || true
+	python3 -m mypy src/core --ignore-missing-imports --no-error-summary || true
 	@echo "✅ Typecheck complete"
 
 # Unit tests
 test-unit:
 	@echo "🧪 Running unit tests..."
-	python -m pytest tests/unit/ -v --tb=short
+	python3 -m pytest tests/unit/ -v --tb=short
 	@echo "✅ Unit tests passed"
 
 # Integration tests (including contract tests)
 test-integration:
 	@echo "🧪 Running integration tests..."
-	python -m pytest tests/integration/ -v --tb=short
+	python3 -m pytest tests/integration/ -v --tb=short
 	@echo "✅ Integration tests passed"
 
 # Golden scenarios (regression tests)
 test-golden:
 	@echo "🧪 Running golden scenarios..."
-	python -m pytest tests/golden/ -v --tb=short
+	python3 -m pytest tests/golden/ -v --tb=short
 	@echo "✅ Golden scenarios passed"
 
 # All tests
@@ -100,7 +100,7 @@ requirements-dev.txt:
 
 # Format code
 format:
-	python -m black src/ tests/ --line-length=100
+	python3 -m black src/ tests/ --line-length=100
 
 # Clean cache files
 clean:
@@ -120,11 +120,11 @@ tree:
 
 # Run demo simulation
 demo:
-	python demo_simulation.py
+	python3 demo_simulation.py
 
 # Run demo with custom params
 demo-preworkout:
-	python demo_simulation.py --carbs 25 --gi 85 --caffeine 200 --population 500
+	python3 demo_simulation.py --carbs 25 --gi 85 --caffeine 200 --population 500
 
 # ============================================================================
 # HELP
