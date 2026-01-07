@@ -1,33 +1,40 @@
+# src/core/compounds/__init__.py
 """
-Compounds module - ingredient library and profiles.
+Compounds module for MODULUS.
 
-Provides:
-- CompoundProfile: Dataclass for compound PK/PD properties
-- IngredientLibrary: Collection of compounds loaded from JSON
-
-Contract 3.1: CompoundProfile validation
-Contract 3.2: IngredientLibrary interface
+This module provides:
+- CompoundProfile: Profile of a compound with PK/PD parameters
+- IngredientLibrary: Library of compounds loaded from JSON
+- Ingredient: A single ingredient with compound_id, amount, and unit
+- ServingInfo: Serving size information
+- ValidationResult: Result of formulation validation
+- Formulation: A complete product formula with multiple ingredients
+- create_simple_formulation: Convenience factory function
 """
-
-from .profile import (
-    CompoundProfile,
-    VALID_PK_MODELS,
-    VALID_PD_MODELS,
-    VALID_EVIDENCE_LEVELS,
-    VALID_DOSE_UNITS,
-    VALID_TARGET_SYSTEMS,
+from src.core.compounds.profile import CompoundProfile
+from src.core.compounds.library import IngredientLibrary
+from src.core.compounds.formulation import (
+    Ingredient,
+    ServingInfo,
+    ValidationResult,
+    Formulation,
+    create_simple_formulation,
+    VALID_UNITS,
+    VALID_FORMS,
 )
-from .library import IngredientLibrary
-
 
 __all__ = [
-    # Main classes
+    # Profile
     "CompoundProfile",
+    # Library
     "IngredientLibrary",
-    # Constants for validation
-    "VALID_PK_MODELS",
-    "VALID_PD_MODELS",
-    "VALID_EVIDENCE_LEVELS",
-    "VALID_DOSE_UNITS",
-    "VALID_TARGET_SYSTEMS",
+    # Formulation
+    "Ingredient",
+    "ServingInfo",
+    "ValidationResult",
+    "Formulation",
+    "create_simple_formulation",
+    # Constants
+    "VALID_UNITS",
+    "VALID_FORMS",
 ]

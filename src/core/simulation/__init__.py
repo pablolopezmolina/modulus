@@ -1,20 +1,27 @@
 """
-Simulation Module: Orchestrators for 24h simulations.
+Simulation module for MODULUS.
 
-This module provides high-level simulation orchestrators that combine
-models, timelines, and states to produce complete simulation results.
-
-Exports:
-    - DaySimulator: Simulates a single person for 24 hours
-    - DaySimulationResult: Result dataclass with curves and metrics
+Contains:
+- DaySimulator: Single person 24h simulation
+- PopulationDaySimulator: Population simulation with streaming aggregation
 """
 
 from src.core.simulation.day_simulator import (
     DaySimulator,
     DaySimulationResult,
 )
+from src.core.simulation.population_day_simulator import (
+    PopulationDaySimulator,
+    PopulationDayResult,
+    PopulationSimulationConfig,
+)
 
 __all__ = [
-    "DaySimulator",
-    "DaySimulationResult",
+    # Day simulation
+    'DaySimulator',
+    'DaySimulationResult',
+    # Population simulation
+    'PopulationDaySimulator',
+    'PopulationDayResult',
+    'PopulationSimulationConfig',
 ]
