@@ -13,13 +13,13 @@
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
-FASE 2 (Pack 1 - €50k):     ██████████░░░░░░░░░░   50% 🔨 EN PROGRESO
+FASE 2 (Pack 1 - €50k):     ████████████░░░░░░░░   60% 🔨 EN PROGRESO
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 2 EN PROGRESO (Semana 5 completada)
-PRÓXIMA SESIÓN:             6.1 - DecisionEngine
+TOTAL PROGRESO:             FASE 2 EN PROGRESO (Semana 6 - Sesión 6.1 completada)
+PRÓXIMA SESIÓN:             6.2 - Claim Defensibility
 ```
 
 ---
@@ -286,13 +286,43 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 
 **🎉 SEMANA 5 COMPLETADA - Population Simulation + Basic Risk Map**
 
-### Sesión 6.1: DecisionEngine 🔨 SIGUIENTE
+### Sesión 6.1: DecisionEngine ✅
 ```
-[ ] src/analysis/decision.py
-[ ] tests/unit/test_decision.py
+[x] src/analysis/decision.py
+[x] tests/unit/test_decision.py
 ```
 
-### Sesión 6.2: Claim Defensibility
+**Completado:** 2025-01-07
+**Tests:** 43 tests nuevos
+**Verificado:**
+- Verdict enum con GO/CAUTION/NO_GO y comparación por severidad ✅
+- RiskSummary frozen dataclass con to_dict() ✅
+- SegmentAtRisk frozen dataclass para reportes ✅
+- DecisionConfig con validación de thresholds (0-100%) ✅
+- Decision frozen dataclass con is_acceptable property ✅
+- DecisionEngine.analyze() produce Decision completo ✅
+- Integración con RiskAnalysisResult (List[RiskMetric]) ✅
+- Reglas de decisión implementadas:
+  * GO: <10% en cualquier riesgo
+  * CAUTION: 10-25% en algún riesgo
+  * NO_GO: ≥25% en algún riesgo
+- Confidence calculation basado en distancia a thresholds ✅
+- Summary generation con 2-3 oraciones ✅
+- Top risks ordenados por valor descendente ✅
+- Segments at risk extraídos de DangerZones ✅
+
+**Clases implementadas:**
+
+| Clase | Tipo | Descripción |
+|-------|------|-------------|
+| Verdict | Enum(str) | GO, CAUTION, NO_GO con comparación |
+| RiskSummary | frozen dataclass | Resumen de riesgo para reportes |
+| SegmentAtRisk | frozen dataclass | Segmento poblacional en riesgo |
+| DecisionConfig | frozen dataclass | Configuración de thresholds |
+| Decision | frozen dataclass | Resultado completo de decisión |
+| DecisionEngine | class | Motor de decisión principal |
+
+### Sesión 6.2: Claim Defensibility 🔨 SIGUIENTE
 ```
 [ ] src/analysis/claims.py
 [ ] tests/unit/test_claims.py
@@ -333,11 +363,12 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | `tests/unit/test_formulation.py` | 50 | ✅ |
 | `tests/unit/test_population_day_simulator.py` | 34 | ✅ |
 | `tests/unit/test_risk.py` | 48 | ✅ |
+| `tests/unit/test_decision.py` | 43 | ✅ |
 | `tests/unit/test_sanity.py` | 9 | ✅ |
 | `tests/integration/test_dependency_rules.py` | 11 | ✅ |
-| **TOTAL** | **615 unit + 11 integration = 626** | ✅ |
+| **TOTAL** | **658 unit + 11 integration = 669** | ✅ |
 
-**`make check`: 626 tests en ~25s**
+**`make check`: 669 tests en ~25s**
 
 ---
 
@@ -382,16 +413,17 @@ modulus/
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
 │   │   └── interactions/    ❌ (Fase 3)
-│   ├── analysis/            ✅ (Fase 1 + Sesión 5.2)
+│   ├── analysis/            ✅ (Fase 1 + Sesiones 5.2, 6.1)
 │   │   ├── __init__.py      ✅
 │   │   ├── metrics.py       ✅
-│   │   └── risk.py          ✅ (nuevo)
+│   │   ├── risk.py          ✅
+│   │   └── decision.py      ✅ (nuevo)
 │   ├── reporting/           ✅ (Fase 1)
 │   └── api/                 ✅ (heredado v1)
 │
 ├── tests/
-│   ├── unit/                ✅ 615 tests
-│   │   ├── test_risk.py     ✅ (nuevo - 48 tests)
+│   ├── unit/                ✅ 658 tests
+│   │   ├── test_decision.py ✅ (nuevo - 43 tests)
 │   │   └── ...
 │   ├── integration/         ✅ 11 tests
 │   └── golden/              ✅ 37 tests (no en make check)
@@ -406,28 +438,33 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 2, Sesión 6.1: DecisionEngine**
+**FASE 2, Sesión 6.2: Claim Defensibility**
 
 ```
-OBJETIVO: Motor de decisión Go/Caution/No-Go basado en análisis de riesgos
+OBJETIVO: Analizador de defensibilidad de claims de marketing
 
 ARCHIVOS A CREAR:
-- src/analysis/decision.py
-- tests/unit/test_decision.py
+- src/analysis/claims.py
+- tests/unit/test_claims.py
 
-ESPECIFICACIÓN:
-- DecisionEngine class
-- Decision dataclass con verdict, confidence, top_risks, summary
-- Reglas de decisión:
-  * GO: <10% en cualquier riesgo alto
-  * CAUTION: 10-25% en algún riesgo
-  * NO_GO: >25% en algún riesgo alto
-- Integración con RiskAnalysisResult
+ESPECIFICACIÓN (del ROADMAP):
+Claims iniciales (no EFSA, solo defensibilidad):
+- sustained_energy: alertness >60% for >4h
+- no_crash: <10% experimenta drop >30%
+- quick_onset: peak alertness <45min
+- glucose_friendly: <15% hyperglycemia
+
+Output:
+- responder_percentage: float
+- is_defensible: bool (>50% responders)
+- confidence: float
+- suggested_wording: str (conservador)
 
 CRITERIOS DE ÉXITO:
-- Genera veredicto basado en RiskAnalysisResult
-- Top 5 riesgos identificados
-- Resumen textual de 2-3 oraciones
+- Analiza claims basado en métricas de PopulationDayResult
+- Genera responder_percentage para cada claim
+- Determina is_defensible según threshold >50%
+- Genera wording conservador sugerido
 - `make check` pasa
 ```
 
@@ -444,4 +481,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | 4.2 | 8 ingredientes Tier 1 con 27 DOIs. |
 | 2025-01-07 | 4.3 | Formulation System: Ingredient, Formulation, validate(), to_timeline(). |
 | 2025-01-07 | 5.1 | PopulationDaySimulator: streaming aggregation, risk analysis, subgroups. |
-| 2025-01-07 | 5.2 | **Basic Risk Map: RiskAnalyzer, RiskMap, DangerZone. 626 tests total.** |
+| 2025-01-07 | 5.2 | Basic Risk Map: RiskAnalyzer, RiskMap, DangerZone. |
+| 2025-01-07 | 6.1 | **DecisionEngine: Verdict, Decision, GO/CAUTION/NO_GO. 669 tests total.** |
