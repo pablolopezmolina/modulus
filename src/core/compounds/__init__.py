@@ -1,34 +1,24 @@
 """
-Compounds module - Ingredient library and compound profiles.
+Compounds module - ingredient library and profiles.
 
-This module provides:
-- CompoundProfile: Data model for supplement ingredients (Contract 3.1)
-- IngredientLibrary: Database of compound profiles (Contract 3.2)
+Provides:
+- CompoundProfile: Dataclass for compound PK/PD properties
+- IngredientLibrary: Collection of compounds loaded from JSON
 
-Example:
-    from src.core.compounds import CompoundProfile, IngredientLibrary
-    
-    # Load library from JSON
-    library = IngredientLibrary("data/reference/ingredients.json")
-    
-    # Get a specific compound
-    caffeine = library.get_compound("caffeine")
-    print(caffeine.bioavailability)  # 0.99
-    
-    # List all compounds
-    all_ids = library.list_compounds()
-    
-    # List compounds by category
-    stimulants = library.list_compounds(category="stimulant")
+Contract 3.1: CompoundProfile validation
+Contract 3.2: IngredientLibrary interface
 """
+
 from .profile import (
     CompoundProfile,
     VALID_PK_MODELS,
     VALID_PD_MODELS,
     VALID_EVIDENCE_LEVELS,
     VALID_DOSE_UNITS,
+    VALID_TARGET_SYSTEMS,
 )
 from .library import IngredientLibrary
+
 
 __all__ = [
     # Main classes
@@ -39,4 +29,5 @@ __all__ = [
     "VALID_PD_MODELS",
     "VALID_EVIDENCE_LEVELS",
     "VALID_DOSE_UNITS",
+    "VALID_TARGET_SYSTEMS",
 ]

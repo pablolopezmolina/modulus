@@ -13,13 +13,13 @@
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
-FASE 2 (Pack 1 - €50k):     ██░░░░░░░░░░░░░░░░░░   10% 🔨 EN PROGRESO
+FASE 2 (Pack 1 - €50k):     ████░░░░░░░░░░░░░░░░   20% 🔨 EN PROGRESO
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 2 EN PROGRESO
-PRÓXIMA SESIÓN:             4.2 - Ingredientes Tier 1 (8 compuestos)
+TOTAL PROGRESO:             FASE 2 EN PROGRESO (Semana 4)
+PRÓXIMA SESIÓN:             4.3 - Formulation System
 ```
 
 ---
@@ -64,6 +64,7 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 |---------|--------|-------|
 | `data/reference/population_params.json` | ✅ Completo | 242 líneas, NHANES |
 | `data/reference/glycemic_index.csv` | ✅ Existe | Índices glicémicos |
+| `data/reference/ingredients.json` | ✅ Completo | 8 compuestos Tier 1 (Sesión 4.2) |
 
 ---
 
@@ -80,11 +81,6 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 
 **Completado:** 2025-01-06
 **Tests:** 34 tests pasando
-**Verificado:**
-- Event rechaza timestamp < 0 y > 1440 ✅
-- PhysiologicalState rechaza glucose NaN/Inf/<20/>600 ✅
-- SimulationResult rechaza time_points que no empiezan en 0 ✅
-- Todos los tipos son inmutables (frozen) ✅
 
 ### Sesión 0.2: CI Local + Dependency Rules ✅
 ```
@@ -97,12 +93,7 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 ```
 
 **Completado:** 2025-01-06
-**Tests:** 54 tests pasando (43 unit + 11 integration)
-**Verificado:**
-- `make check` ejecuta lint + typecheck + tests ✅
-- Test falla si core/ importa de api/ o reporting/ ✅
-- Test falla si contracts/ importa de implementation ✅
-- Todo pasa en <2 segundos ✅
+**Tests:** 11 integration tests
 
 ### Sesión 0.3: Golden Scenarios Base ✅
 ```
@@ -112,196 +103,37 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 ```
 
 **Completado:** 2025-01-06
-**Tests:** 37 tests pasando (GS01: 11, GS02: 14, GS10: 12)
-**Verificado:**
-- GS01: OGTT 75g glucose - peak 140-180 mg/dL, time to peak 30-60 min ✅
-- GS02: Coffee 100mg - Cmax 1.5-2.5 mg/L, half-life 4-6h ✅
-- GS10: Reproducibilidad exacta (np.array_equal) ✅
-- Tolerancias calibradas contra modelo real ✅
+**Tests:** 37 golden tests
 
 ---
 
 ## FASE 1: 24H ENGINE ✅ COMPLETADA
 
-### Sesión 1.1: Event (dataclass + validación) ✅
-```
-[x] src/core/timeline/__init__.py
-[x] tests/unit/test_event.py
-```
+### Sesión 1.1: Event ✅
+**Completado:** 2025-01-07 | **Tests:** 26
 
-**Completado:** 2025-01-07
-**Tests:** 26 tests nuevos
-**Verificado:**
-- Event re-exportado desde contracts/ (single source of truth) ✅
-- Contract 2.1 compliance: timestamp [0,1440], event_types, payload validation ✅
-- Inmutabilidad (frozen) ✅
-- Serialización to_dict/from_dict ✅
-- Factory methods create_ingestion/create_meal ✅
-- Nota: Event NO es hashable debido a payload dict (documentado, aceptable para Timeline)
-
-### Sesión 1.2: Timeline (inmutable, ordenada) ✅
-```
-[x] src/core/timeline/timeline.py
-[x] src/core/timeline/__init__.py (actualizado con EventType + Timeline)
-[x] tests/unit/test_timeline.py
-```
-
-**Completado:** 2025-01-07
-**Tests:** 51 tests nuevos
-**Verificado:**
-- Timeline almacena events como tuple (inmutable) ✅
-- add_event() retorna NUEVA Timeline (inmutabilidad) ✅
-- events SIEMPRE ordenados por timestamp_minutes ✅
-- Dos eventos NO pueden tener el mismo timestamp (ValueError) ✅
-- get_events_in_range(start, end) con validación de rangos ✅
-- validate() verifica ordenación y unicidad ✅
-- Serialización to_json/from_json con auto-sort ✅
-- Propiedades: first_event, last_event, duration_minutes, is_empty ✅
-- Métodos auxiliares: has_event_at, get_event_at ✅
-- Soporta iteración y len() ✅
-- Contract 2.2 100% cumplido ✅
+### Sesión 1.2: Timeline ✅
+**Completado:** 2025-01-07 | **Tests:** 51
 
 ### Sesión 2.1: PhysiologicalState ✅
-```
-[x] src/core/state/__init__.py
-[x] src/core/state/state.py
-[x] tests/unit/test_state.py
-```
-
-**Completado:** 2025-01-07
-**Tests:** 57 tests nuevos
-**Verificado:**
-- PhysiologicalState es frozen (inmutable) ✅
-- Contract 2.3 compliance: todos los campos validados ✅
-- Validación de rangos fisiológicos:
-  * timestamp_minutes >= 0 ✅
-  * glucose_plasma_mg_dl: [20, 600] mg/dL ✅
-  * insulin_plasma_mu_l: [0, 1000] mU/L ✅
-  * glucose_gut_mg >= 0 ✅
-  * caffeine_plasma_mg_l: [0, 100] mg/L ✅
-  * adenosine_receptor_occupancy: [0, 1] ✅
-  * alertness_score: [0, 100] ✅
-  * hours_since_last_meal >= 0 ✅
-- Rechaza NaN e Inf en todos los campos numéricos ✅
-- Factory functions:
-  * create_fasted_state(person) ✅
-  * create_initial_state(person) ✅
-- with_updates(**kwargs) para actualizaciones inmutables ✅
-- Propiedades computadas: time_hours, is_hypoglycemic, is_hyperglycemic, has_caffeine ✅
-- Serialización: to_dict(), from_dict() ✅
-- Hashable (para uso en sets/dicts) ✅
+**Completado:** 2025-01-07 | **Tests:** 57
 
 ### Sesión 2.2: StateIntegrator (step) ✅
-```
-[x] src/core/state/integrator.py
-[x] src/core/state/__init__.py (actualizado con StateIntegrator)
-[x] tests/unit/test_integrator.py
-```
-
-**Completado:** 2025-01-07
-**Tests:** 15 tests nuevos
-**Verificado:**
-- StateIntegrator.step() retorna PhysiologicalState válido ✅
-- Contract 2.4 compliance: error → previous state + warning ✅
-- Maneja eventos "meal": añade carbs a glucose_gut, reset hours_since_last_meal ✅
-- Maneja eventos "ingestion" (caffeine): absorption + elimination ✅
-- Múltiples eventos en un step procesados correctamente ✅
-- hours_since_last_meal se actualiza automáticamente ✅
-- is_fasted se actualiza después de 10h sin comida ✅
-- Soporta inicialización con models dict (Contract 2.4 signature) ✅
-- Alertness calculada via Emax model ✅
-- Adenosine receptor occupancy modelada ✅
-- Compatible con PhysiologicalState real de Sesión 2.1 ✅
+**Completado:** 2025-01-07 | **Tests:** 15
 
 ### Sesión 2.3: StateIntegrator (simulate_timeline) ✅
-```
-[x] src/core/state/integrator.py (añadir simulate_timeline)
-[x] tests/unit/test_integrator_24h.py
-```
-
-**Completado:** 2025-01-07
-**Tests:** 30 tests nuevos
-**Verificado:**
-- simulate_timeline() retorna List[PhysiologicalState] ✅
-- Contract 2.4 compliance: estados para t=0, dt, 2*dt, ..., 1440 ✅
-- Con dt=1.0 retorna 1441 estados ✅
-- Con dt=5.0 retorna 289 estados ✅
-- Con dt=10.0 retorna 145 estados ✅
-- Eventos se aplican en el timestep correcto ✅
-- Soporta timelines vacíos (baseline fisiológico) ✅
-- Soporta múltiples eventos (GS05-style full day) ✅
-- Timestamps monotónicamente crecientes ✅
-- Glucosa aumenta después de comidas ✅
-- Cafeína aparece después de ingestión ✅
-- Cafeína se acumula con múltiples dosis ✅
-- hours_since_last_meal se resetea correctamente ✅
-- Reproducibilidad: mismos inputs = mismos outputs ✅
-- Reset de _pending_caffeine_mg al inicio de simulación ✅
+**Completado:** 2025-01-07 | **Tests:** 30
 
 ### Sesión 3.1: DaySimulator ✅
-```
-[x] src/core/simulation/__init__.py
-[x] src/core/simulation/day_simulator.py
-[x] tests/unit/test_day_simulator.py
-```
-
-**Completado:** 2025-01-07
-**Tests:** 35 tests nuevos
-**Verificado:**
-- DaySimulator envuelve StateIntegrator ✅
-- DaySimulationResult frozen con todas las curvas ✅
-- Contract 5.1 compliance:
-  * __init__(person, library=None, interaction_graph=None) ✅
-  * simulate(timeline, dt_minutes=1.0) → DaySimulationResult ✅
-  * states tiene len = 1440/dt_minutes + 1 ✅
-  * Curvas como numpy arrays ✅
-  * Curvas misma longitud que time_minutes ✅
-- Curvas extraídas de PhysiologicalState: glucose, insulin, caffeine, alertness ✅
-- Métricas calculadas: glucose_peak, caffeine_peak, alertness_peak, etc. ✅
-- warnings es lista (vacía por ahora) ✅
-- Reproducibilidad: mismos inputs = mismos outputs ✅
+**Completado:** 2025-01-07 | **Tests:** 35
 
 ### Sesión 3.2: Métricas Básicas ✅
-```
-[x] src/analysis/__init__.py
-[x] src/analysis/metrics.py
-[x] tests/unit/test_metrics.py
-```
-
-**Completado:** 2025-01-07
-**Tests:** 40 tests nuevos
-**Verificado:**
-- Métricas de glucosa: peak, time_to_peak, auc, time_above_threshold ✅
-- Métricas de cafeína: peak, half_life ✅
-- Métricas de alertness: peak, duration_above_threshold ✅
-- Métricas de riesgo: sleep_disruption_risk (sigmoid basado en cafeína a las 22:00) ✅
-- MetricsCalculator class para cálculo batch ✅
-- calculate_all_metrics() devuelve dict con 9 métricas ✅
-- Funciones puras (sin side effects) ✅
-- Manejo de edge cases: arrays vacíos, NaN, Inf ✅
-- Compatible con numpy >= 2.0 (usa trapezoid con fallback) ✅
+**Completado:** 2025-01-07 | **Tests:** 40
 
 ### Sesión 3.3: PDF Generator v0 ✅
-```
-[x] src/reporting/__init__.py
-[x] src/reporting/pdf_generator.py
-[x] src/reporting/charts.py
-[x] tests/unit/test_pdf_generator.py
-```
+**Completado:** 2025-01-07 | **Tests:** 26
 
-**Completado:** 2025-01-07
-**Tests:** 26 tests nuevos
-**Verificado:**
-- PDFGenerator genera PDFs válidos (~280KB con gráficos) ✅
-- PDF tiene 6+ páginas: Executive Summary, Charts (2), Metrics, Warnings, Methodology ✅
-- Gráficos matplotlib embebidos como PNG ✅
-- PDFConfig es frozen (inmutable) ✅
-- Funciones utilitarias: minutes_to_time_string, format_duration ✅
-- Soporta warnings automáticos basados en métricas ✅
-- Reproducible: mismos inputs = mismos outputs ✅
-- Charts module con 5 funciones: glucose, caffeine, alertness, combined, metrics_summary ✅
-
-**🎉 FASE 1 COMPLETADA - HITO: Demo "Simulo un día completo + PDF" lista para LinkedIn**
+**🎉 FASE 1 COMPLETADA - HITO: Demo "Simulo un día completo + PDF"**
 
 ---
 
@@ -316,46 +148,50 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 ```
 
 **Completado:** 2025-01-07
-**Tests:** 39 tests nuevos
+**Tests:** 58 tests
 **Verificado:**
 - CompoundProfile dataclass con validación completa ✅
-- Contract 3.1 compliance:
-  * compound_id debe ser snake_case ✅
-  * pk_model válido: one_compartment, two_compartment, saturable ✅
-  * pd_model válido: emax, linear, threshold, none ✅
-  * bioavailability en [0, 1] ✅
-  * max_single_dose > 0 ✅
-  * max_daily_dose > 0 ✅
-  * evidence_level válido: high, medium, low, theoretical ✅
-  * dose_unit válido: mg, g, mcg ✅
-- Contract 3.2 compliance:
-  * IngredientLibrary.get_compound() → KeyError si no existe ✅
-  * IngredientLibrary.list_compounds() → List[str] (IDs, no objetos) ✅
-  * IngredientLibrary.get_interaction() → None (sin interacciones aún) ✅
-- Serialización: to_dict(), from_dict() ✅
-- Propiedades de library: len(), iter(), in, list_categories() ✅
+- Contract 3.1 y 3.2 compliance ✅
 
-### Sesión 4.2: Ingredientes Tier 1 (8 compuestos) 🔨 SIGUIENTE
+### Sesión 4.2: Ingredientes Tier 1 (8 compuestos) ✅
 ```
-[ ] data/reference/ingredients.json (8 compuestos con evidencia COMPLETA)
-
-Compuestos:
-1. caffeine - ya modelado, documentar mejor
-2. carbohydrate_glucose - GI=100, referencia
-3. carbohydrate_maltodextrin - GI alto (~85-105)
-4. carbohydrate_palatinose - GI bajo (~32)
-5. l_theanine - sinergista con cafeína
-6. taurine - común en energy drinks
-7. beta_alanine - pre-workout clásico
-8. creatine_monohydrate - muy estudiado
-
-Cada uno con: pk_params, pd_params, sources[] (DOIs reales), confidence
+[x] data/reference/ingredients.json (8 compuestos con evidencia COMPLETA)
+[x] tests/unit/test_ingredients_library.py
+[x] tests/unit/test_compounds.py (actualizado para nueva interfaz)
 ```
 
-### Sesión 4.3: Formulation System
+**Completado:** 2025-01-07
+**Tests:** 103 tests nuevos (test_ingredients_library) + 58 actualizados (test_compounds)
+**Verificado:**
+- 8 compuestos Tier 1 con parámetros PK/PD completos ✅
+- 27 DOIs reales de literatura científica ✅
+- IngredientLibrary carga JSON sin errores ✅
+- Todos los compuestos pasan validación CompoundProfile ✅
+
+**Compuestos implementados:**
+
+| Compuesto | Categoría | PK Model | PD Model | DOIs | Evidence |
+|-----------|-----------|----------|----------|------|----------|
+| caffeine | stimulant | one_compartment | emax | 4 | high |
+| carbohydrate_glucose | carbohydrate | one_compartment | linear | 3 | high |
+| carbohydrate_maltodextrin | carbohydrate | one_compartment | linear | 3 | high |
+| carbohydrate_palatinose | carbohydrate | one_compartment | linear | 3 | high |
+| l_theanine | amino | one_compartment | emax | 4 | high |
+| taurine | amino | one_compartment | threshold | 3 | medium |
+| beta_alanine | amino | one_compartment | threshold | 3 | high |
+| creatine_monohydrate | amino | saturable | threshold | 4 | high |
+
+### Sesión 4.3: Formulation System 🔨 SIGUIENTE
 ```
 [ ] src/core/compounds/formulation.py
+[ ] tests/unit/test_formulation.py
 ```
+
+**Especificación:**
+- class Ingredient(compound_id, amount, unit)
+- class Formulation(name, ingredients[], form, serving_info)
+- validate() → bool + List[warnings]
+- to_timeline(base_time) → Timeline
 
 ### Semana 5: Population + Risk
 ```
@@ -377,74 +213,35 @@ Cada uno con: pk_params, pd_params, sources[] (DOIs reales), confidence
 
 ---
 
-## FASE 3: PACK 2 (€250k) 🔨
+## FASE 3: PACK 2 (€250k) - PENDIENTE
 
 ### Semana 8: Ingredients + Interactions
-```
-[ ] data/reference/ingredients.json (15 compuestos)
-[ ] src/core/interactions/__init__.py
-[ ] src/core/interactions/interaction.py
-[ ] src/core/interactions/graph.py
-[ ] data/reference/interactions.json
-```
-
 ### Semana 9: Evidence
-```
-[ ] src/analysis/evidence.py
-[ ] src/reporting/bundle.py
-```
-
 ### Semana 10: Advanced Features
-```
-[ ] src/analysis/risk.py (6 segmentos)
-[ ] src/analysis/comparison.py
-[ ] src/reporting/certificate.py
-```
-
 ### Semana 11: PDF v2
-```
-[ ] src/reporting/pdf_generator.py (40+ pág)
-```
-
----
-
-## ARCHIVOS DE CONFIGURACIÓN
-
-| Archivo | Estado | Notas |
-|---------|--------|-------|
-| `data/reference/population_params.json` | ✅ | Completo |
-| `data/reference/ingredients.json` | ❌ | Por crear (Sesión 4.2) |
-| `data/reference/interactions.json` | ❌ | Por crear |
-| `data/reference/glycemic_index.csv` | ✅ | Existe |
-| `Makefile` | ✅ | Actualizado en 0.2 (python3) |
-| `requirements.txt` | ✅ | Creado en 0.1 |
-| `requirements-dev.txt` | ✅ | Creado en 0.1 |
-| `pyproject.toml` | ✅ | Creado en 0.1 |
-| `docs/ENVIRONMENT.md` | ✅ | Creado en 0.2 |
 
 ---
 
 ## TESTS
 
-| Suite | Estado | Tests |
-|-------|--------|-------|
-| `tests/unit/test_contracts.py` | ✅ | 34 tests |
-| `tests/unit/test_event.py` | ✅ | 26 tests |
-| `tests/unit/test_timeline.py` | ✅ | 51 tests |
-| `tests/unit/test_state.py` | ✅ | 57 tests |
-| `tests/unit/test_integrator.py` | ✅ | 15 tests |
-| `tests/unit/test_integrator_24h.py` | ✅ | 30 tests |
-| `tests/unit/test_day_simulator.py` | ✅ | 35 tests |
-| `tests/unit/test_metrics.py` | ✅ | 40 tests |
-| `tests/unit/test_pdf_generator.py` | ✅ | 26 tests |
-| `tests/unit/test_compounds.py` | ✅ | 39 tests |
-| `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
-| `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
-| `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests (no ejecutados en make check) |
-| `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests (no ejecutados en make check) |
-| `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests (no ejecutados en make check) |
+| Suite | Tests | Estado |
+|-------|-------|--------|
+| `tests/unit/test_contracts.py` | 34 | ✅ |
+| `tests/unit/test_event.py` | 26 | ✅ |
+| `tests/unit/test_timeline.py` | 51 | ✅ |
+| `tests/unit/test_state.py` | 57 | ✅ |
+| `tests/unit/test_integrator.py` | 15 | ✅ |
+| `tests/unit/test_integrator_24h.py` | 30 | ✅ |
+| `tests/unit/test_day_simulator.py` | 35 | ✅ |
+| `tests/unit/test_metrics.py` | 40 | ✅ |
+| `tests/unit/test_pdf_generator.py` | 26 | ✅ |
+| `tests/unit/test_compounds.py` | 58 | ✅ |
+| `tests/unit/test_ingredients_library.py` | 103 | ✅ |
+| `tests/unit/test_sanity.py` | 9 | ✅ |
+| `tests/integration/test_dependency_rules.py` | 11 | ✅ |
+| **TOTAL** | **494** | ✅ |
 
-**Total en `make check`:** 373 tests pasando (362 unit + 11 integration)
+**`make check`: 483 unit + 11 integration = 494 tests en 6.21s**
 
 ---
 
@@ -461,77 +258,35 @@ modulus/
 │   ├── MASTER_PROMPT.md     ✅
 │   ├── GOLDEN_SCENARIOS.md  ✅
 │   ├── BUSINESS_MODEL.md    ✅
-│   └── ENVIRONMENT.md       ✅
+│   ├── ENVIRONMENT.md       ✅
+│   ├── WORKFLOW.md          ✅
+│   └── MAKEFILE_REFERENCE.md ✅
 │
 ├── data/
 │   └── reference/
 │       ├── population_params.json  ✅
 │       ├── glycemic_index.csv      ✅
-│       ├── ingredients.json        ❌ (Sesión 4.2)
-│       └── interactions.json       ❌
+│       ├── ingredients.json        ✅ (Sesión 4.2)
+│       └── interactions.json       ❌ (Fase 3)
 │
 ├── src/
-│   ├── __init__.py          ✅
 │   ├── core/
-│   │   ├── __init__.py      ✅
-│   │   ├── contracts/       ✅ (Sesión 0.1)
-│   │   │   ├── __init__.py  ✅
-│   │   │   ├── events.py    ✅
-│   │   │   ├── state.py     ✅
-│   │   │   └── results.py   ✅
-│   │   ├── timeline/        ✅ (Sesiones 1.1-1.2)
-│   │   │   ├── __init__.py  ✅ (exporta Event, EventType, Timeline)
-│   │   │   └── timeline.py  ✅
-│   │   ├── state/           ✅ (Sesiones 2.1-2.3)
-│   │   │   ├── __init__.py  ✅ (exporta PhysiologicalState, StateIntegrator)
-│   │   │   ├── state.py     ✅
-│   │   │   └── integrator.py ✅ (con simulate_timeline)
-│   │   ├── simulation/      ✅ (Sesión 3.1)
-│   │   │   ├── __init__.py  ✅ (exporta DaySimulator, DaySimulationResult)
-│   │   │   └── day_simulator.py ✅
-│   │   ├── compounds/       ✅ (Sesión 4.1)
-│   │   │   ├── __init__.py  ✅
-│   │   │   ├── profile.py   ✅
-│   │   │   └── library.py   ✅
+│   │   ├── contracts/       ✅ (Fase 0)
+│   │   ├── timeline/        ✅ (Fase 1)
+│   │   ├── state/           ✅ (Fase 1)
+│   │   ├── simulation/      ✅ (Fase 1)
+│   │   ├── compounds/       ✅ (Fase 2 - Sesiones 4.1, 4.2)
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
-│   │   ├── interactions/    ❌ (Fase 3)
-│   │   ├── engine.py        ✅
-│   │   └── adapters.py      ✅
-│   │
-│   ├── analysis/            ✅ (Sesión 3.2)
-│   │   ├── __init__.py      ✅
-│   │   └── metrics.py       ✅
-│   ├── reporting/           ✅ (Sesión 3.3)
-│   │   ├── __init__.py      ✅
-│   │   ├── pdf_generator.py ✅
-│   │   └── charts.py        ✅
-│   └── api/
-│       └── main.py          ✅
+│   │   └── interactions/    ❌ (Fase 3)
+│   ├── analysis/            ✅ (Fase 1)
+│   ├── reporting/           ✅ (Fase 1)
+│   └── api/                 ✅ (heredado v1)
 │
 ├── tests/
-│   ├── __init__.py          ✅
-│   ├── unit/
-│   │   ├── __init__.py      ✅
-│   │   ├── test_contracts.py ✅ 34 tests
-│   │   ├── test_event.py     ✅ 26 tests
-│   │   ├── test_timeline.py  ✅ 51 tests
-│   │   ├── test_state.py     ✅ 57 tests
-│   │   ├── test_integrator.py ✅ 15 tests
-│   │   ├── test_integrator_24h.py ✅ 30 tests
-│   │   ├── test_day_simulator.py ✅ 35 tests
-│   │   ├── test_metrics.py   ✅ 40 tests
-│   │   ├── test_pdf_generator.py ✅ 26 tests
-│   │   ├── test_compounds.py ✅ 39 tests
-│   │   └── test_sanity.py    ✅ 9 tests
-│   ├── integration/
-│   │   ├── __init__.py      ✅
-│   │   └── test_dependency_rules.py ✅ 11 tests
-│   └── golden/
-│       ├── __init__.py      ✅
-│       ├── test_gs01_ogtt.py ✅ 11 tests
-│       ├── test_gs02_coffee.py ✅ 14 tests
-│       └── test_gs10_reproducibility.py ✅ 12 tests
+│   ├── unit/                ✅ 483 tests
+│   ├── integration/         ✅ 11 tests
+│   └── golden/              ✅ 37 tests (no en make check)
 │
 ├── Makefile                 ✅
 ├── pyproject.toml           ✅
@@ -543,28 +298,26 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 2, Sesión 4.2: Ingredientes Tier 1**
+**FASE 2, Sesión 4.3: Formulation System**
 
 ```
-OBJETIVO: Crear ingredients.json con 8 compuestos con evidencia completa
+OBJETIVO: Sistema para crear fórmulas (productos) a partir de ingredientes
 
 ARCHIVOS A CREAR:
-- data/reference/ingredients.json
+- src/core/compounds/formulation.py
+- tests/unit/test_formulation.py
 
-COMPUESTOS (con DOIs reales):
-1. caffeine
-2. carbohydrate_glucose
-3. carbohydrate_maltodextrin
-4. carbohydrate_palatinose
-5. l_theanine
-6. taurine
-7. beta_alanine
-8. creatine_monohydrate
+ESPECIFICACIÓN:
+- class Ingredient(compound_id, amount, unit)
+- class Formulation(name, ingredients[], form, serving_info)
+- validate(library) → ValidationResult
+- to_timeline(base_time) → Timeline
 
 CRITERIOS DE ÉXITO:
-- IngredientLibrary puede cargar el archivo
-- Todos los compuestos tienen sources[] con DOIs reales
+- Formulation puede validarse contra IngredientLibrary
+- Puede convertirse a Timeline de eventos
 - Tests de validación pasan
+- `make check` pasa
 ```
 
 ---
@@ -573,16 +326,8 @@ CRITERIOS DE ÉXITO:
 
 | Fecha | Sesión | Cambios |
 |-------|--------|---------|
-| 2025-01-04 | - | Estado inicial v3.0. Capa 1 heredada de v1. |
-| 2025-01-06 | 0.1 | ✅ Contratos ejecutables: Event, PhysiologicalState, SimulationResult. 34 tests. |
-| 2025-01-06 | 0.2 | ✅ CI Local: Makefile (python3), dependency rules, ENVIRONMENT.md. 54 tests total. |
-| 2025-01-06 | 0.3 | ✅ Golden Scenarios: GS01 (OGTT), GS02 (Coffee), GS10 (Reproducibility). 91 tests total. **FASE 0 COMPLETADA.** |
-| 2025-01-07 | 1.1 | ✅ Timeline Event: Módulo timeline/ creado, re-exporta Event de contracts/. 26 tests. |
-| 2025-01-07 | 1.2 | ✅ Timeline: Clase inmutable, ordenada, Contract 2.2 compliant. 51 tests. 131 tests total. |
-| 2025-01-07 | 2.1 | ✅ PhysiologicalState: Módulo state/ con validación completa, factories, with_updates, propiedades computadas. 57 tests. 188 tests total. |
-| 2025-01-07 | 2.2 | ✅ StateIntegrator: step() con glucose/caffeine dynamics, eventos meal/ingestion, hours_since_last_meal tracking. 15 tests. 203 tests total. |
-| 2025-01-07 | 2.3 | ✅ StateIntegrator: simulate_timeline() para 24h completas, Contract 2.4 compliant. 30 tests. 233 tests total. |
-| 2025-01-07 | 3.1 | ✅ DaySimulator: Orquestador 24h con curvas numpy y métricas básicas. Contract 5.1 compliant. 35 tests. 268 tests total. |
-| 2025-01-07 | 3.2 | ✅ Métricas Básicas: 9 métricas (glucose, caffeine, alertness, risk). Funciones puras. 40 tests. 308 tests total. |
-| 2025-01-07 | 3.3 | ✅ PDF Generator v0: Generación de PDFs profesionales con gráficos. 26 tests. **334 tests total. FASE 1 COMPLETADA.** |
-| 2025-01-07 | 4.1 | ✅ CompoundProfile + IngredientLibrary: Contract 3.1 y 3.2 compliant. 39 tests. **373 tests total.** |
+| 2025-01-04 | - | Estado inicial v3.0 |
+| 2025-01-06 | 0.1-0.3 | FASE 0 completada. Contratos, CI, Golden Scenarios. |
+| 2025-01-07 | 1.1-3.3 | FASE 1 completada. 24h Engine + PDF v0. |
+| 2025-01-07 | 4.1 | CompoundProfile + IngredientLibrary. Contract 3.1/3.2. |
+| 2025-01-07 | 4.2 | **8 ingredientes Tier 1 con 27 DOIs. 494 tests total.** |

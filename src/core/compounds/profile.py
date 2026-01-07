@@ -1,141 +1,168 @@
 """
-CompoundProfile - Ingredient/compound data model.
+Compound Profile - defines PK/PD properties of an ingredient.
 
-Implements Contract 3.1: CompoundProfile from CONTRACTS.md.
-
-A CompoundProfile contains all pharmacokinetic and pharmacodynamic 
-parameters for a supplement ingredient.
+Contract 3.1 Compliance:
+- compound_id must be unique snake_case
+- pk_model: one_compartment | two_compartment | saturable
+- pd_model: emax | linear | threshold | none
+- bioavailability: [0, 1]
+- evidence_level: high | medium | low | theoretical
+- dose_unit: mg | g | mcg
 """
+
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Dict, List, Any
 import re
 
 
 # Valid values for enum-like fields
-VALID_PK_MODELS = frozenset(["one_compartment", "two_compartment", "saturable"])
-VALID_PD_MODELS = frozenset(["emax", "linear", "threshold", "none"])
-VALID_EVIDENCE_LEVELS = frozenset(["high", "medium", "low", "theoretical"])
-VALID_DOSE_UNITS = frozenset(["mg", "g", "mcg"])
-
-# Snake case pattern: lowercase letters, numbers, and underscores only
-SNAKE_CASE_PATTERN = re.compile(r'^[a-z][a-z0-9_]*$')
+VALID_PK_MODELS = {"one_compartment", "two_compartment", "saturable"}
+VALID_PD_MODELS = {"emax", "linear", "threshold", "none"}
+VALID_EVIDENCE_LEVELS = {"high", "medium", "low", "theoretical"}
+VALID_DOSE_UNITS = {"mg", "g", "mcg"}
+VALID_TARGET_SYSTEMS = {
+    "glucose", "caffeine", "adenosine", "cortisol", 
+    "energy", "muscle", "neural", "none"
+}
 
 
 def _validate_snake_case(value: str, field_name: str) -> None:
-    """Validate that a string is in snake_case format."""
-    if not SNAKE_CASE_PATTERN.match(value):
+    """Validate that a string is snake_case."""
+    pattern = r'^[a-z][a-z0-9_]*$'
+    if not re.match(pattern, value):
         raise ValueError(
-            f"{field_name} must be in snake_case format (lowercase letters, "
-            f"numbers, and underscores only, starting with a letter). Got: '{value}'"
+            f"{field_name} must be snake_case (lowercase, underscores), got: {value}"
         )
 
 
-def _validate_range(value: float, min_val: float, max_val: float, field_name: str) -> None:
-    """Validate that a value is within a range [min_val, max_val]."""
-    if value < min_val or value > max_val:
-        raise ValueError(
-            f"{field_name} must be between {min_val} and {max_val}. Got: {value}"
-        )
-
-
-def _validate_positive(value: float, field_name: str) -> None:
-    """Validate that a value is positive (> 0)."""
-    if value <= 0:
-        raise ValueError(f"{field_name} must be positive (> 0). Got: {value}")
-
-
-def _validate_enum(value: str, valid_values: frozenset, field_name: str) -> None:
-    """Validate that a value is in a set of valid values."""
-    if value not in valid_values:
-        raise ValueError(
-            f"{field_name} must be one of {sorted(valid_values)}. Got: '{value}'"
-        )
-
-
-@dataclass
+@dataclass(frozen=True)
 class CompoundProfile:
     """
-    Profile for a supplement compound with PK/PD parameters.
+    Profile of a compound/ingredient with PK/PD parameters.
     
-    Implements Contract 3.1 from CONTRACTS.md.
+    Contract 3.1:
+    - compound_id: unique snake_case identifier
+    - pk_model: one_compartment, two_compartment, or saturable
+    - pd_model: emax, linear, threshold, or none
+    - bioavailability: [0, 1]
+    - evidence_level: high, medium, low, or theoretical
+    - dose_unit: mg, g, or mcg
     
-    Attributes:
-        compound_id: Unique identifier in snake_case (e.g., "caffeine", "l_theanine")
-        name: Human-readable name (e.g., "Caffeine", "L-Theanine")
-        category: Compound category (e.g., "stimulant", "amino", "vitamin")
-        
-        pk_model: Pharmacokinetic model type
-        pk_params: Parameters for the PK model
-        bioavailability: Fraction absorbed (0-1)
-        
-        pd_model: Pharmacodynamic model type
-        pd_params: Parameters for the PD model
-        target_system: Physiological system affected (e.g., "alertness", "glucose")
-        
-        max_single_dose: Maximum safe single dose
-        max_daily_dose: Maximum safe daily dose
-        dose_unit: Unit for doses ("mg", "g", "mcg")
-        
-        evidence_level: Quality of evidence ("high", "medium", "low", "theoretical")
-        primary_sources: List of DOIs or references
-    
-    Contract 3.1 Requirements:
-        - compound_id MUST be unique in the library (enforced by IngredientLibrary)
-        - pk_params MUST contain parameters required for pk_model
-        - pd_params MUST contain parameters required for pd_model
-        - bioavailability MUST be in [0, 1]
+    Example:
+        >>> caffeine = CompoundProfile(
+        ...     compound_id="caffeine",
+        ...     name="Caffeine",
+        ...     category="stimulant",
+        ...     pk_model="one_compartment",
+        ...     pk_params={"half_life_hours": 5.0},
+        ...     bioavailability=0.99,
+        ...     pd_model="emax",
+        ...     pd_params={"emax": 100, "ec50_mg_l": 2.5},
+        ...     target_system="adenosine",
+        ...     max_single_dose=400,
+        ...     max_daily_dose=600,
+        ...     dose_unit="mg",
+        ...     evidence_level="high",
+        ...     primary_sources=["10.1016/0024-3205(83)90546-3"],
+        ... )
     """
-    # Required fields (no defaults) - must come first
+    
+    # === Required fields (no defaults) ===
+    
+    # Identification
     compound_id: str
     name: str
     category: str
+    
+    # Pharmacokinetics
     pk_model: str
+    
+    # Pharmacodynamics
     pd_model: str
     
-    # Optional fields with defaults
-    pk_params: Dict[str, float] = field(default_factory=dict)
+    # Dose limits
+    max_single_dose: float
+    max_daily_dose: float
+    
+    # Target system
+    target_system: str
+    
+    # === Optional fields (with defaults) ===
+    
+    # PK/PD parameters
+    pk_params: Dict[str, Any] = field(default_factory=dict)
+    pd_params: Dict[str, Any] = field(default_factory=dict)
+    
+    # Other optional
     bioavailability: float = 1.0
-    pd_params: Dict[str, float] = field(default_factory=dict)
-    target_system: str = "none"
-    max_single_dose: float = 1000.0
-    max_daily_dose: float = 2000.0
     dose_unit: str = "mg"
-    evidence_level: str = "low"
+    evidence_level: str = "theoretical"
     primary_sources: List[str] = field(default_factory=list)
     
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         """Validate all fields after initialization."""
         # Validate compound_id is snake_case
         _validate_snake_case(self.compound_id, "compound_id")
         
-        # Validate bioavailability is in [0, 1]
-        _validate_range(self.bioavailability, 0.0, 1.0, "bioavailability")
+        # Validate name is not empty
+        if not self.name or not self.name.strip():
+            raise ValueError("name cannot be empty")
         
-        # Validate model types
-        _validate_enum(self.pk_model, VALID_PK_MODELS, "pk_model")
-        _validate_enum(self.pd_model, VALID_PD_MODELS, "pd_model")
+        # Validate pk_model
+        if self.pk_model not in VALID_PK_MODELS:
+            raise ValueError(
+                f"pk_model must be one of {VALID_PK_MODELS}, got: {self.pk_model}"
+            )
+        
+        # Validate pd_model
+        if self.pd_model not in VALID_PD_MODELS:
+            raise ValueError(
+                f"pd_model must be one of {VALID_PD_MODELS}, got: {self.pd_model}"
+            )
+        
+        # Validate bioavailability
+        if not 0 <= self.bioavailability <= 1:
+            raise ValueError(
+                f"bioavailability must be in [0, 1], got: {self.bioavailability}"
+            )
+        
+        # Validate target_system
+        if self.target_system not in VALID_TARGET_SYSTEMS:
+            raise ValueError(
+                f"target_system must be one of {VALID_TARGET_SYSTEMS}, got: {self.target_system}"
+            )
         
         # Validate dose limits
-        _validate_positive(self.max_single_dose, "max_single_dose")
-        _validate_positive(self.max_daily_dose, "max_daily_dose")
+        if self.max_single_dose <= 0:
+            raise ValueError(
+                f"max_single_dose must be > 0, got: {self.max_single_dose}"
+            )
+        if self.max_daily_dose <= 0:
+            raise ValueError(
+                f"max_daily_dose must be > 0, got: {self.max_daily_dose}"
+            )
         
-        # Validate dose unit
-        _validate_enum(self.dose_unit, VALID_DOSE_UNITS, "dose_unit")
+        # Validate dose_unit
+        if self.dose_unit not in VALID_DOSE_UNITS:
+            raise ValueError(
+                f"dose_unit must be one of {VALID_DOSE_UNITS}, got: {self.dose_unit}"
+            )
         
-        # Validate evidence level
-        _validate_enum(self.evidence_level, VALID_EVIDENCE_LEVELS, "evidence_level")
-        
-        # Ensure primary_sources is a list
-        if not isinstance(self.primary_sources, list):
-            object.__setattr__(self, 'primary_sources', list(self.primary_sources))
+        # Validate evidence_level
+        if self.evidence_level not in VALID_EVIDENCE_LEVELS:
+            raise ValueError(
+                f"evidence_level must be one of {VALID_EVIDENCE_LEVELS}, "
+                f"got: {self.evidence_level}"
+            )
+    
+    # =========================================================================
+    # Serialization
+    # =========================================================================
     
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Serialize to dictionary.
-        
-        Returns:
-            Dictionary representation suitable for JSON serialization.
-        """
+        """Convert to dictionary for JSON serialization."""
         return {
             "compound_id": self.compound_id,
             "name": self.name,
@@ -155,37 +182,49 @@ class CompoundProfile:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "CompoundProfile":
-        """
-        Create CompoundProfile from dictionary.
-        
-        Args:
-            data: Dictionary with compound profile data.
-            
-        Returns:
-            New CompoundProfile instance.
-            
-        Raises:
-            ValueError: If data is invalid.
-        """
+        """Create from dictionary."""
         return cls(
             compound_id=data["compound_id"],
             name=data["name"],
             category=data["category"],
             pk_model=data["pk_model"],
-            pk_params=dict(data.get("pk_params", {})),
-            bioavailability=float(data.get("bioavailability", 1.0)),
+            pk_params=data.get("pk_params", {}),
+            bioavailability=data.get("bioavailability", 1.0),
             pd_model=data["pd_model"],
-            pd_params=dict(data.get("pd_params", {})),
+            pd_params=data.get("pd_params", {}),
             target_system=data.get("target_system", "none"),
-            max_single_dose=float(data.get("max_single_dose", 1000.0)),
-            max_daily_dose=float(data.get("max_daily_dose", 2000.0)),
+            max_single_dose=data["max_single_dose"],
+            max_daily_dose=data["max_daily_dose"],
             dose_unit=data.get("dose_unit", "mg"),
-            evidence_level=data.get("evidence_level", "low"),
-            primary_sources=list(data.get("primary_sources", [])),
+            evidence_level=data.get("evidence_level", "theoretical"),
+            primary_sources=data.get("primary_sources", []),
         )
+    
+    # =========================================================================
+    # Utility Methods
+    # =========================================================================
+    
+    def get_pk_param(self, param_name: str, default: Any = None) -> Any:
+        """Get a PK parameter with optional default."""
+        return self.pk_params.get(param_name, default)
+    
+    def get_pd_param(self, param_name: str, default: Any = None) -> Any:
+        """Get a PD parameter with optional default."""
+        return self.pd_params.get(param_name, default)
+    
+    @property
+    def has_high_evidence(self) -> bool:
+        """Check if compound has high evidence level."""
+        return self.evidence_level == "high"
+    
+    @property
+    def source_count(self) -> int:
+        """Number of primary sources."""
+        return len(self.primary_sources)
     
     def __repr__(self) -> str:
         return (
-            f"CompoundProfile(compound_id='{self.compound_id}', "
-            f"name='{self.name}', category='{self.category}')"
+            f"CompoundProfile(id={self.compound_id!r}, "
+            f"name={self.name!r}, "
+            f"evidence={self.evidence_level})"
         )
