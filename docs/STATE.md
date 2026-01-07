@@ -12,13 +12,13 @@
 
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
-FASE 1 (24h Engine):        ██░░░░░░░░░░░░░░░░░░   10% 🔨 EN PROGRESO
+FASE 1 (24h Engine):        ████░░░░░░░░░░░░░░░░   20% 🔨 EN PROGRESO
 FASE 2 (Pack 1 - €50k):     ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░   0%
 
-TOTAL PROGRESO:             ~30% (Capa 1 Foundation + FASE 0 + Sesión 1.1)
+TOTAL PROGRESO:             ~35% (Capa 1 Foundation + FASE 0 + Sesiones 1.1-1.2)
 ```
 
 ---
@@ -129,7 +129,7 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 ```
 
 **Completado:** 2025-01-07
-**Tests:** 26 tests nuevos (69 unit tests total, 80 con integration)
+**Tests:** 26 tests nuevos
 **Verificado:**
 - Event re-exportado desde contracts/ (single source of truth) ✅
 - Contract 2.1 compliance: timestamp [0,1440], event_types, payload validation ✅
@@ -138,19 +138,40 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 - Factory methods create_ingestion/create_meal ✅
 - Nota: Event NO es hashable debido a payload dict (documentado, aceptable para Timeline)
 
-### Sesión 1.2: Timeline (inmutable, ordenada) 🔨 SIGUIENTE
+### Sesión 1.2: Timeline (inmutable, ordenada) ✅
 ```
-[ ] src/core/timeline/timeline.py
-[ ] tests/unit/test_timeline.py
+[x] src/core/timeline/timeline.py
+[x] src/core/timeline/__init__.py (actualizado con EventType + Timeline)
+[x] tests/unit/test_timeline.py
 ```
 
-### Semana 2: State + Integrator
+**Completado:** 2025-01-07
+**Tests:** 51 tests nuevos (131 tests total: 120 unit + 11 integration)
+**Verificado:**
+- Timeline almacena events como tuple (inmutable) ✅
+- add_event() retorna NUEVA Timeline (inmutabilidad) ✅
+- events SIEMPRE ordenados por timestamp_minutes ✅
+- Dos eventos NO pueden tener el mismo timestamp (ValueError) ✅
+- get_events_in_range(start, end) con validación de rangos ✅
+- validate() verifica ordenación y unicidad ✅
+- Serialización to_json/from_json con auto-sort ✅
+- Propiedades: first_event, last_event, duration_minutes, is_empty ✅
+- Métodos auxiliares: has_event_at, get_event_at ✅
+- Soporta iteración y len() ✅
+- Contract 2.2 100% cumplido ✅
+
+### Sesión 2.1: PhysiologicalState 🔨 SIGUIENTE
 ```
 [ ] src/core/state/__init__.py
 [ ] src/core/state/state.py
-[ ] src/core/state/integrator.py
 [ ] tests/unit/test_state.py
+```
+
+### Sesión 2.2-2.3: StateIntegrator
+```
+[ ] src/core/state/integrator.py
 [ ] tests/unit/test_integrator.py
+[ ] tests/unit/test_integrator_24h.py
 ```
 
 ### Semana 3: DaySimulator + PDF v0
@@ -250,13 +271,14 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 |-------|--------|-------|
 | `tests/unit/test_contracts.py` | ✅ | 34 tests |
 | `tests/unit/test_event.py` | ✅ | 26 tests |
+| `tests/unit/test_timeline.py` | ✅ | 51 tests |
 | `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
 | `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
 | `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests |
 | `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests |
 | `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests |
 
-**Total:** 117 tests pasando
+**Total:** 131 tests pasando (120 unit + 11 integration)
 
 ---
 
@@ -291,11 +313,12 @@ modulus/
 │   │   │   ├── events.py    ✅
 │   │   │   ├── state.py     ✅
 │   │   │   └── results.py   ✅
-│   │   ├── timeline/        ✅ (Sesión 1.1)
-│   │   │   └── __init__.py  ✅
+│   │   ├── timeline/        ✅ (Sesiones 1.1-1.2)
+│   │   │   ├── __init__.py  ✅ (exporta Event, EventType, Timeline)
+│   │   │   └── timeline.py  ✅
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
-│   │   ├── state/           ❌ (Fase 1)
+│   │   ├── state/           ❌ (Fase 1 - siguiente)
 │   │   ├── compounds/       ❌ (Fase 2)
 │   │   ├── interactions/    ❌ (Fase 3)
 │   │   ├── simulation/      ❌ (Fase 1)
@@ -313,6 +336,7 @@ modulus/
 │   │   ├── __init__.py      ✅
 │   │   ├── test_contracts.py ✅ 34 tests
 │   │   ├── test_event.py     ✅ 26 tests
+│   │   ├── test_timeline.py  ✅ 51 tests
 │   │   └── test_sanity.py    ✅ 9 tests
 │   ├── integration/
 │   │   ├── __init__.py      ✅
@@ -333,27 +357,39 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 1, Sesión 1.2: Timeline (inmutable, ordenada)**
+**FASE 1, Sesión 2.1: PhysiologicalState**
 
 ```
-OBJETIVO: Crear la clase Timeline que maneja lista ordenada de Events
+OBJETIVO: Crear PhysiologicalState para representar estado del cuerpo en cada timestep
 
 ARCHIVOS A CREAR:
-- src/core/timeline/timeline.py
-- tests/unit/test_timeline.py
+- src/core/state/__init__.py
+- src/core/state/state.py
+- tests/unit/test_state.py
 
-ESPECIFICACIÓN (Contract 2.2):
-- class Timeline (inmutable)
-- events: List[Event] SIEMPRE ordenados por timestamp_minutes
-- add_event(event) → nueva Timeline (inmutabilidad)
-- get_events_in_range(start, end) → List[Event]
-- validate() → bool
-- to_json() / from_json()
-- Dos eventos NO pueden tener el mismo timestamp exacto
+ESPECIFICACIÓN (Contract 2.3):
+- @dataclass(frozen=True) PhysiologicalState
+- Campos principales:
+  * timestamp_minutes: float
+  * glucose_plasma_mg_dl: float
+  * insulin_plasma_mu_l: float
+  * glucose_gut_mg: float
+  * caffeine_plasma_mg_l: float
+  * adenosine_receptor_occupancy: float (0-1)
+  * alertness_score: float (0-100)
+  * is_fasted: bool
+  * hours_since_last_meal: float
+- Validación: todos los valores en rangos fisiológicos
+- Factory: create_fasted_state(person) → PhysiologicalState
+- with_updates(**kwargs) → nuevo estado
+
+NOTA: Ya existe PhysiologicalState en contracts/state.py
+Verificar si cumple Contract 2.3 o necesita extensión.
 
 CRITERIOS DE ÉXITO:
-- Timeline es inmutable
-- Events siempre ordenados por timestamp
+- PhysiologicalState es inmutable (frozen)
+- Validación de rangos fisiológicos
+- Factory method funcional
 - Tests unitarios pasan
 - make check pasa
 ```
@@ -368,4 +404,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-06 | 0.1 | ✅ Contratos ejecutables: Event, PhysiologicalState, SimulationResult. 34 tests. |
 | 2025-01-06 | 0.2 | ✅ CI Local: Makefile (python3), dependency rules, ENVIRONMENT.md. 54 tests total. |
 | 2025-01-06 | 0.3 | ✅ Golden Scenarios: GS01 (OGTT), GS02 (Coffee), GS10 (Reproducibility). 91 tests total. **FASE 0 COMPLETADA.** |
-| 2025-01-07 | 1.1 | ✅ Timeline Event: Módulo timeline/ creado, re-exporta Event de contracts/. 26 tests. 80 tests total. |
+| 2025-01-07 | 1.1 | ✅ Timeline Event: Módulo timeline/ creado, re-exporta Event de contracts/. 26 tests. |
+| 2025-01-07 | 1.2 | ✅ Timeline: Clase inmutable, ordenada, Contract 2.2 compliant. 51 tests. 131 tests total. |
