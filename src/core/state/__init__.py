@@ -1,37 +1,28 @@
 """
-MODULUS - State Module
-Session 2.1: Physiological state representation for 24h simulation
+State module for MODULUS.
 
 This module provides:
 - PhysiologicalState: Immutable snapshot of body state at a moment
+- StateIntegrator: Advances state through time using physiological models
 - Factory functions for creating states
 - Validation constants for physiological ranges
 
-Contract 2.3 compliant.
+Contract 2.3 (PhysiologicalState):
+- All numeric values MUST be finite (no NaN, no Inf)
+- All values MUST be in physiological ranges
+- timestamp_minutes MUST be >= 0
 
-Example usage:
-    from src.core.state import PhysiologicalState, create_fasted_state
-    from src.core.population.person import VirtualPerson
-    
-    person = VirtualPerson.create_reference()
-    initial_state = create_fasted_state(person)
-    
-    # Update state immutably
-    new_state = initial_state.with_updates(
-        timestamp_minutes=60.0,
-        glucose_plasma_mg_dl=150.0,
-    )
+Contract 2.4 (StateIntegrator):
+- step() ALWAYS returns a valid PhysiologicalState
+- If error, returns previous state + logs warning
+- simulate_timeline() returns states for t=0, dt, 2*dt, ..., 1440
 """
 
 from src.core.state.state import (
-    # Main class
     PhysiologicalState,
-    
-    # Factory functions
     create_fasted_state,
     create_initial_state,
-    
-    # Validation ranges (useful for tests and other modules)
+    # Validation range constants
     GLUCOSE_RANGE,
     INSULIN_RANGE,
     CAFFEINE_RANGE,
@@ -41,16 +32,16 @@ from src.core.state.state import (
     HOURS_SINCE_MEAL_MIN,
     TIMESTAMP_MIN,
 )
+from src.core.state.integrator import StateIntegrator
 
 __all__ = [
-    # Main class
+    # Main classes
     "PhysiologicalState",
-    
+    "StateIntegrator",
     # Factory functions
     "create_fasted_state",
     "create_initial_state",
-    
-    # Validation ranges
+    # Validation constants
     "GLUCOSE_RANGE",
     "INSULIN_RANGE",
     "CAFFEINE_RANGE",
