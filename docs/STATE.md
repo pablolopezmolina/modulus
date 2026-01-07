@@ -13,13 +13,13 @@
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
-FASE 2 (Pack 1 - €50k):     ░░░░░░░░░░░░░░░░░░░░   0%
-FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░   0%
-FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░   0%
-FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░   0%
+FASE 2 (Pack 1 - €50k):     ██░░░░░░░░░░░░░░░░░░   10% 🔨 EN PROGRESO
+FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░    0%
+FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░    0%
+FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 1 COMPLETADA ✅
-HITO ALCANZADO:             Demo "Simulo un día completo + PDF" lista para LinkedIn
+TOTAL PROGRESO:             FASE 2 EN PROGRESO
+PRÓXIMA SESIÓN:             4.2 - Ingredientes Tier 1 (8 compuestos)
 ```
 
 ---
@@ -305,15 +305,56 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 
 ---
 
-## FASE 2: PACK 1 (€50k) 🔨 SIGUIENTE
+## FASE 2: PACK 1 (€50k) 🔨 EN PROGRESO
 
-### Semana 4: Ingredients
+### Sesión 4.1: CompoundProfile + Library ✅
 ```
-[ ] src/core/compounds/__init__.py
-[ ] src/core/compounds/profile.py
-[ ] src/core/compounds/library.py
+[x] src/core/compounds/__init__.py
+[x] src/core/compounds/profile.py
+[x] src/core/compounds/library.py
+[x] tests/unit/test_compounds.py
+```
+
+**Completado:** 2025-01-07
+**Tests:** 39 tests nuevos
+**Verificado:**
+- CompoundProfile dataclass con validación completa ✅
+- Contract 3.1 compliance:
+  * compound_id debe ser snake_case ✅
+  * pk_model válido: one_compartment, two_compartment, saturable ✅
+  * pd_model válido: emax, linear, threshold, none ✅
+  * bioavailability en [0, 1] ✅
+  * max_single_dose > 0 ✅
+  * max_daily_dose > 0 ✅
+  * evidence_level válido: high, medium, low, theoretical ✅
+  * dose_unit válido: mg, g, mcg ✅
+- Contract 3.2 compliance:
+  * IngredientLibrary.get_compound() → KeyError si no existe ✅
+  * IngredientLibrary.list_compounds() → List[str] (IDs, no objetos) ✅
+  * IngredientLibrary.get_interaction() → None (sin interacciones aún) ✅
+- Serialización: to_dict(), from_dict() ✅
+- Propiedades de library: len(), iter(), in, list_categories() ✅
+
+### Sesión 4.2: Ingredientes Tier 1 (8 compuestos) 🔨 SIGUIENTE
+```
+[ ] data/reference/ingredients.json (8 compuestos con evidencia COMPLETA)
+
+Compuestos:
+1. caffeine - ya modelado, documentar mejor
+2. carbohydrate_glucose - GI=100, referencia
+3. carbohydrate_maltodextrin - GI alto (~85-105)
+4. carbohydrate_palatinose - GI bajo (~32)
+5. l_theanine - sinergista con cafeína
+6. taurine - común en energy drinks
+7. beta_alanine - pre-workout clásico
+8. creatine_monohydrate - muy estudiado
+
+Cada uno con: pk_params, pd_params, sources[] (DOIs reales), confidence
+```
+
+### Sesión 4.3: Formulation System
+```
 [ ] src/core/compounds/formulation.py
-[ ] data/reference/ingredients.json (8 compuestos)
 ```
 
 ### Semana 5: Population + Risk
@@ -372,7 +413,7 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | Archivo | Estado | Notas |
 |---------|--------|-------|
 | `data/reference/population_params.json` | ✅ | Completo |
-| `data/reference/ingredients.json` | ❌ | Por crear |
+| `data/reference/ingredients.json` | ❌ | Por crear (Sesión 4.2) |
 | `data/reference/interactions.json` | ❌ | Por crear |
 | `data/reference/glycemic_index.csv` | ✅ | Existe |
 | `Makefile` | ✅ | Actualizado en 0.2 (python3) |
@@ -396,13 +437,14 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | `tests/unit/test_day_simulator.py` | ✅ | 35 tests |
 | `tests/unit/test_metrics.py` | ✅ | 40 tests |
 | `tests/unit/test_pdf_generator.py` | ✅ | 26 tests |
+| `tests/unit/test_compounds.py` | ✅ | 39 tests |
 | `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
 | `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
 | `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests (no ejecutados en make check) |
 | `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests (no ejecutados en make check) |
 | `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests (no ejecutados en make check) |
 
-**Total en `make check`:** 334 tests pasando (323 unit + 11 integration)
+**Total en `make check`:** 373 tests pasando (362 unit + 11 integration)
 
 ---
 
@@ -425,7 +467,7 @@ modulus/
 │   └── reference/
 │       ├── population_params.json  ✅
 │       ├── glycemic_index.csv      ✅
-│       ├── ingredients.json        ❌
+│       ├── ingredients.json        ❌ (Sesión 4.2)
 │       └── interactions.json       ❌
 │
 ├── src/
@@ -447,9 +489,12 @@ modulus/
 │   │   ├── simulation/      ✅ (Sesión 3.1)
 │   │   │   ├── __init__.py  ✅ (exporta DaySimulator, DaySimulationResult)
 │   │   │   └── day_simulator.py ✅
+│   │   ├── compounds/       ✅ (Sesión 4.1)
+│   │   │   ├── __init__.py  ✅
+│   │   │   ├── profile.py   ✅
+│   │   │   └── library.py   ✅
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
-│   │   ├── compounds/       ❌ (Fase 2)
 │   │   ├── interactions/    ❌ (Fase 3)
 │   │   ├── engine.py        ✅
 │   │   └── adapters.py      ✅
@@ -477,6 +522,7 @@ modulus/
 │   │   ├── test_day_simulator.py ✅ 35 tests
 │   │   ├── test_metrics.py   ✅ 40 tests
 │   │   ├── test_pdf_generator.py ✅ 26 tests
+│   │   ├── test_compounds.py ✅ 39 tests
 │   │   └── test_sanity.py    ✅ 9 tests
 │   ├── integration/
 │   │   ├── __init__.py      ✅
@@ -497,25 +543,28 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 2, Sesión 4.1: CompoundProfile + Library**
+**FASE 2, Sesión 4.2: Ingredientes Tier 1**
 
 ```
-OBJETIVO: Crear el sistema de librería de ingredientes
+OBJETIVO: Crear ingredients.json con 8 compuestos con evidencia completa
 
 ARCHIVOS A CREAR:
-- src/core/compounds/__init__.py
-- src/core/compounds/profile.py
-- src/core/compounds/library.py
-- tests/unit/test_compounds.py
+- data/reference/ingredients.json
 
-ESPECIFICACIÓN:
-- @dataclass CompoundProfile (validado) con Contract 3.1
-- IngredientLibrary.get_compound(id) → CompoundProfile
-- IngredientLibrary.list_compounds() → List[str]
+COMPUESTOS (con DOIs reales):
+1. caffeine
+2. carbohydrate_glucose
+3. carbohydrate_maltodextrin
+4. carbohydrate_palatinose
+5. l_theanine
+6. taurine
+7. beta_alanine
+8. creatine_monohydrate
 
 CRITERIOS DE ÉXITO:
-- make check pasa
-- Contract 3.1 y 3.2 cumplidos
+- IngredientLibrary puede cargar el archivo
+- Todos los compuestos tienen sources[] con DOIs reales
+- Tests de validación pasan
 ```
 
 ---
@@ -536,3 +585,4 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | 3.1 | ✅ DaySimulator: Orquestador 24h con curvas numpy y métricas básicas. Contract 5.1 compliant. 35 tests. 268 tests total. |
 | 2025-01-07 | 3.2 | ✅ Métricas Básicas: 9 métricas (glucose, caffeine, alertness, risk). Funciones puras. 40 tests. 308 tests total. |
 | 2025-01-07 | 3.3 | ✅ PDF Generator v0: Generación de PDFs profesionales con gráficos. 26 tests. **334 tests total. FASE 1 COMPLETADA.** |
+| 2025-01-07 | 4.1 | ✅ CompoundProfile + IngredientLibrary: Contract 3.1 y 3.2 compliant. 39 tests. **373 tests total.** |
