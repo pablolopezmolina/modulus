@@ -1,19 +1,17 @@
-# src/analysis/__init__.py
 """
-MODULUS Analysis Module.
+Analysis Module - MODULUS
 
-This module provides metrics calculation, risk analysis, and claim defensibility
-tools for evaluating supplement formulations.
-
-Submodules:
-- metrics: Basic metabolic and performance metrics
-- risk: Risk mapping and segmentation (future)
-- claims: Claim defensibility analysis (future)
-- decision: Go/Caution/No-Go decision engine (future)
+Contains analysis tools for evaluating simulation results:
+- metrics: Calculation of business metrics from simulation curves
+- risk: Risk analysis and risk maps
+- decision: Decision engine (Go/Caution/No-Go)
+- claims: Claim defensibility analysis
 """
 
+# Metrics
 from src.analysis.metrics import (
-    # Individual metric functions
+    MetricsCalculator,
+    calculate_all_metrics,
     calculate_glucose_peak,
     calculate_glucose_time_to_peak,
     calculate_glucose_auc,
@@ -23,26 +21,74 @@ from src.analysis.metrics import (
     calculate_alertness_peak,
     calculate_alertness_duration_above_threshold,
     calculate_sleep_disruption_risk,
-    # Batch calculator
-    MetricsCalculator,
-    calculate_all_metrics,
+)
+
+# Risk Analysis
+from src.analysis.risk import (
+    RiskLevel,
+    RiskThresholds,
+    RiskMetric,
+    SegmentRisk,
+    RiskMap,
+    DangerZone,
+    RiskAnalyzer,
+    RiskAnalysisResult,
+)
+
+# Decision Engine
+from src.analysis.decision import (
+    Verdict,
+    RiskSummary,
+    SegmentAtRisk,
+    DecisionConfig,
+    Decision,
+    DecisionEngine,
+)
+
+# Claims Analysis
+from src.analysis.claims import (
+    ClaimDefinition,
+    ClaimAnalysis,
+    ClaimAnalyzerConfig,
+    ClaimAnalysisResult,
+    ClaimAnalyzer,
+    get_default_claims,
 )
 
 __all__ = [
-    # Glucose metrics
+    # Metrics
+    "MetricsCalculator",
+    "calculate_all_metrics",
     "calculate_glucose_peak",
     "calculate_glucose_time_to_peak",
     "calculate_glucose_auc",
     "calculate_time_above_glucose_threshold",
-    # Caffeine metrics
     "calculate_caffeine_peak",
     "calculate_caffeine_half_life",
-    # Alertness metrics
     "calculate_alertness_peak",
     "calculate_alertness_duration_above_threshold",
-    # Risk metrics
     "calculate_sleep_disruption_risk",
-    # Batch calculator
-    "MetricsCalculator",
-    "calculate_all_metrics",
+    # Risk
+    "RiskLevel",
+    "RiskThresholds",
+    "RiskMetric",
+    "SegmentRisk",
+    "RiskMap",
+    "DangerZone",
+    "RiskAnalyzer",
+    "RiskAnalysisResult",
+    # Decision
+    "Verdict",
+    "RiskSummary",
+    "SegmentAtRisk",
+    "DecisionConfig",
+    "Decision",
+    "DecisionEngine",
+    # Claims
+    "ClaimDefinition",
+    "ClaimAnalysis",
+    "ClaimAnalyzerConfig",
+    "ClaimAnalysisResult",
+    "ClaimAnalyzer",
+    "get_default_claims",
 ]
