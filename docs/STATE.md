@@ -13,13 +13,13 @@
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
-FASE 2 (Pack 1 - €50k):     ████████░░░░░░░░░░░░   40% 🔨 EN PROGRESO
+FASE 2 (Pack 1 - €50k):     ██████████░░░░░░░░░░   50% 🔨 EN PROGRESO
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 2 EN PROGRESO (Semana 5 iniciada)
-PRÓXIMA SESIÓN:             5.2 - Basic Risk Map
+TOTAL PROGRESO:             FASE 2 EN PROGRESO (Semana 5 completada)
+PRÓXIMA SESIÓN:             6.1 - DecisionEngine
 ```
 
 ---
@@ -220,7 +220,7 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 ```
 
 **Completado:** 2025-01-07
-**Tests:** 34 tests nuevos (567 unit + 11 integration = 578 total)
+**Tests:** 34 tests nuevos
 **Verificado:**
 - PopulationDaySimulator con streaming aggregation ✅
 - Contract 5.2 compliance ✅
@@ -252,16 +252,50 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | pct_sleep_disruption | caffeine > 1 mg/L at 22:00 |
 | pct_crash_risk | alertness drop > 30% in 2h |
 
-### Sesión 5.2: Basic Risk Map 🔨 SIGUIENTE
+### Sesión 5.2: Basic Risk Map ✅
 ```
-[ ] src/analysis/risk.py
-[ ] tests/unit/test_risk.py
+[x] src/analysis/risk.py
+[x] tests/unit/test_risk.py
 ```
 
-### Semana 6: Decision
+**Completado:** 2025-01-07
+**Tests:** 48 tests nuevos
+**Verificado:**
+- RiskThresholds frozen dataclass con validación ✅
+- RiskMetric con clasificación LOW/MEDIUM/HIGH automática ✅
+- RiskLevel enum con comparación (<, >, etc.) ✅
+- SegmentRisk frozen dataclass ✅
+- RiskMap con matrices por dimensión (BMI, age, caffeine_sensitivity) ✅
+- DangerZone identificación con severity score ✅
+- RiskAnalyzer clase principal ✅
+- RiskAnalysisResult con get_summary(), get_top_risks(), to_dict() ✅
+- Recomendaciones específicas por danger zone ✅
+
+**Clases implementadas:**
+
+| Clase | Tipo | Descripción |
+|-------|------|-------------|
+| RiskLevel | Enum | LOW, MEDIUM, HIGH con comparación |
+| RiskThresholds | frozen dataclass | Umbrales configurables |
+| RiskMetric | frozen dataclass | Métrica individual con nivel |
+| SegmentRisk | frozen dataclass | Riesgo por segmento |
+| RiskMap | dataclass | Matriz segmento × riesgo |
+| DangerZone | frozen dataclass | Zona de alto riesgo |
+| RiskAnalyzer | class | Analizador principal |
+| RiskAnalysisResult | dataclass | Resultado completo |
+
+**🎉 SEMANA 5 COMPLETADA - Population Simulation + Basic Risk Map**
+
+### Sesión 6.1: DecisionEngine 🔨 SIGUIENTE
 ```
 [ ] src/analysis/decision.py
+[ ] tests/unit/test_decision.py
+```
+
+### Sesión 6.2: Claim Defensibility
+```
 [ ] src/analysis/claims.py
+[ ] tests/unit/test_claims.py
 ```
 
 ### Semana 7: PDF v1
@@ -298,11 +332,12 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | `tests/unit/test_ingredients_library.py` | 103 | ✅ |
 | `tests/unit/test_formulation.py` | 50 | ✅ |
 | `tests/unit/test_population_day_simulator.py` | 34 | ✅ |
+| `tests/unit/test_risk.py` | 48 | ✅ |
 | `tests/unit/test_sanity.py` | 9 | ✅ |
 | `tests/integration/test_dependency_rules.py` | 11 | ✅ |
-| **TOTAL** | **567 unit + 11 integration = 578** | ✅ |
+| **TOTAL** | **615 unit + 11 integration = 626** | ✅ |
 
-**`make check`: 578 tests en ~25s**
+**`make check`: 626 tests en ~25s**
 
 ---
 
@@ -336,9 +371,9 @@ modulus/
 │   │   ├── timeline/        ✅ (Fase 1)
 │   │   ├── state/           ✅ (Fase 1)
 │   │   ├── simulation/      ✅ (Fase 1 + Sesión 5.1)
-│   │   │   ├── __init__.py  ✅ (actualizado)
+│   │   │   ├── __init__.py  ✅
 │   │   │   ├── day_simulator.py ✅
-│   │   │   └── population_day_simulator.py ✅ (nuevo)
+│   │   │   └── population_day_simulator.py ✅
 │   │   ├── compounds/       ✅ (Fase 2 - Sesiones 4.1, 4.2, 4.3)
 │   │   │   ├── __init__.py  ✅
 │   │   │   ├── profile.py   ✅
@@ -347,13 +382,17 @@ modulus/
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
 │   │   └── interactions/    ❌ (Fase 3)
-│   ├── analysis/            ✅ (Fase 1)
+│   ├── analysis/            ✅ (Fase 1 + Sesión 5.2)
+│   │   ├── __init__.py      ✅
+│   │   ├── metrics.py       ✅
+│   │   └── risk.py          ✅ (nuevo)
 │   ├── reporting/           ✅ (Fase 1)
 │   └── api/                 ✅ (heredado v1)
 │
 ├── tests/
-│   ├── unit/                ✅ 567 tests
-│   │   └── test_population_day_simulator.py ✅ (nuevo)
+│   ├── unit/                ✅ 615 tests
+│   │   ├── test_risk.py     ✅ (nuevo - 48 tests)
+│   │   └── ...
 │   ├── integration/         ✅ 11 tests
 │   └── golden/              ✅ 37 tests (no en make check)
 │
@@ -367,26 +406,28 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 2, Sesión 5.2: Basic Risk Map**
+**FASE 2, Sesión 6.1: DecisionEngine**
 
 ```
-OBJETIVO: Módulo dedicado de análisis de riesgos con segmentación detallada
+OBJETIVO: Motor de decisión Go/Caution/No-Go basado en análisis de riesgos
 
 ARCHIVOS A CREAR:
-- src/analysis/risk.py
-- tests/unit/test_risk.py
+- src/analysis/decision.py
+- tests/unit/test_decision.py
 
 ESPECIFICACIÓN:
-- RiskAnalyzer class
-- Métricas de riesgo detalladas con umbrales configurables
-- Risk Map con 3 segmentos (by_bmi, by_age, by_caffeine_sensitivity)
-- Matriz visual segmento × riesgo
-- Identificación de "danger zones"
+- DecisionEngine class
+- Decision dataclass con verdict, confidence, top_risks, summary
+- Reglas de decisión:
+  * GO: <10% en cualquier riesgo alto
+  * CAUTION: 10-25% en algún riesgo
+  * NO_GO: >25% en algún riesgo alto
+- Integración con RiskAnalysisResult
 
 CRITERIOS DE ÉXITO:
-- Análisis de riesgos extraído de PopulationDayResult
-- Umbrales configurables
-- Segmentación por múltiples dimensiones
+- Genera veredicto basado en RiskAnalysisResult
+- Top 5 riesgos identificados
+- Resumen textual de 2-3 oraciones
 - `make check` pasa
 ```
 
@@ -402,4 +443,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | 4.1 | CompoundProfile + IngredientLibrary. Contract 3.1/3.2. |
 | 2025-01-07 | 4.2 | 8 ingredientes Tier 1 con 27 DOIs. |
 | 2025-01-07 | 4.3 | Formulation System: Ingredient, Formulation, validate(), to_timeline(). |
-| 2025-01-07 | 5.1 | **PopulationDaySimulator: streaming aggregation, risk analysis, subgroups. 578 tests total.** |
+| 2025-01-07 | 5.1 | PopulationDaySimulator: streaming aggregation, risk analysis, subgroups. |
+| 2025-01-07 | 5.2 | **Basic Risk Map: RiskAnalyzer, RiskMap, DangerZone. 626 tests total.** |
