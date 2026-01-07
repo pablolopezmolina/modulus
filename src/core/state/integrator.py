@@ -1,10 +1,11 @@
 """
-StateIntegrator - Session 2.2
+StateIntegrator - Session 2.2 + 2.3
 
 Contract 2.4 compliance:
 - step() ALWAYS returns a valid PhysiologicalState
 - If error occurs, returns previous state + logs warning
 - Integrates glucose and caffeine models
+- simulate_timeline() returns states for t=0, dt, 2*dt, ..., 1440
 
 The StateIntegrator is the bridge between:
 - Timeline/Events (what happens during the day)
@@ -17,11 +18,15 @@ from __future__ import annotations
 import logging
 import warnings
 from dataclasses import dataclass
-from typing import Dict, Any, List, Optional, Protocol, Union, runtime_checkable
+from typing import Dict, Any, List, Optional, Protocol, Union, runtime_checkable, TYPE_CHECKING
 
 import numpy as np
 
 from src.core.state.state import PhysiologicalState
+
+# Type checking imports (avoid circular imports)
+if TYPE_CHECKING:
+    from src.core.timeline.timeline import Timeline
 
 
 # Configure logging
@@ -84,6 +89,9 @@ ALERTNESS_BASELINE = 50.0
 ALERTNESS_EMAX = 40.0  # Max additional alertness from caffeine
 CAFFEINE_EC50 = 1.5  # mg/L for 50% max effect
 
+# Simulation constants
+TOTAL_DAY_MINUTES = 1440.0  # 24 hours
+
 
 # =============================================================================
 # STATE INTEGRATOR
@@ -97,6 +105,7 @@ class StateIntegrator:
     - step() ALWAYS returns a valid PhysiologicalState
     - If error, returns previous state + logs warning
     - Handles "meal" and "ingestion" events
+    - simulate_timeline() returns states for t=0, dt, 2*dt, ..., 1440
     
     Example:
         person = VirtualPerson.create_reference()
@@ -197,6 +206,71 @@ class StateIntegrator:
                 # If even that fails, return the original state
                 return current_state
     
+    def simulate_timeline(
+        self,
+        initial_state: PhysiologicalState,
+        timeline: "Timeline",
+        dt_minutes: float = 1.0
+    ) -> List[PhysiologicalState]:
+        """
+        Simulate a full 24-hour period.
+        
+        Contract 2.4:
+        - Returns states for t=0, dt, 2*dt, ..., 1440
+        - Uses step() internally for each timestep
+        - Applies events when their timestamp falls within the current step
+        
+        Args:
+            initial_state: Starting physiological state (will be adjusted to t=0)
+            timeline: Timeline of events for the day
+            dt_minutes: Time step size in minutes (default 1.0)
+            
+        Returns:
+            List of PhysiologicalState, one per timestep
+            Length = int(1440 / dt_minutes) + 1
+            
+        Example:
+            timeline = Timeline().add_event(
+                Event.create_meal(timestamp_minutes=60.0, carbs_g=50.0, ...)
+            )
+            states = integrator.simulate_timeline(initial_state, timeline, dt_minutes=1.0)
+            # states[0] is at t=0, states[60] is at t=60 (when meal occurs)
+        """
+        # Reset pending doses at start of simulation
+        self._pending_caffeine_mg = 0.0
+        self._pending_glucose_mg = 0.0
+        
+        # Calculate number of steps
+        n_steps = int(TOTAL_DAY_MINUTES / dt_minutes) + 1
+        
+        # Initialize states list with initial state at t=0
+        current_state = initial_state.with_updates(timestamp_minutes=0.0)
+        states: List[PhysiologicalState] = [current_state]
+        
+        # Pre-process events into a lookup by timestep index
+        # Event at time t goes into step index = floor(t / dt)
+        event_lookup: Dict[int, List[EventLike]] = {}
+        for event in timeline.events:
+            step_index = int(event.timestamp_minutes / dt_minutes)
+            if step_index not in event_lookup:
+                event_lookup[step_index] = []
+            event_lookup[step_index].append(event)
+        
+        # Run simulation: generate states for t=dt, 2*dt, ..., 1440
+        for step_idx in range(1, n_steps):
+            # Current time at START of this step
+            current_time = (step_idx - 1) * dt_minutes
+            
+            # Get events that occur during this step interval [current_time, current_time + dt)
+            # These are events with step_index == step_idx - 1
+            events_this_step = event_lookup.get(step_idx - 1, [])
+            
+            # Apply step to advance state
+            current_state = self.step(current_state, events_this_step, dt_minutes)
+            states.append(current_state)
+        
+        return states
+    
     def _process_events(
         self,
         current_state: PhysiologicalState,
@@ -212,20 +286,25 @@ class StateIntegrator:
         
         for event in events:
             try:
-                if event.event_type == "meal":
+                # Handle both string and enum event_type
+                event_type = event.event_type
+                if hasattr(event_type, 'value'):
+                    event_type = event_type.value
+                
+                if event_type == "meal":
                     meal_updates = self._process_meal_event(current_state, event)
                     updates.update(meal_updates)
                     
-                elif event.event_type == "ingestion":
+                elif event_type == "ingestion":
                     ingestion_updates = self._process_ingestion_event(current_state, event)
                     updates.update(ingestion_updates)
                     
-                elif event.event_type in ("exercise", "sleep"):
+                elif event_type in ("exercise", "sleep"):
                     # TODO: Implement in future sessions
-                    logger.debug(f"Event type '{event.event_type}' not yet implemented")
+                    logger.debug(f"Event type '{event_type}' not yet implemented")
                     
                 else:
-                    logger.warning(f"Unknown event type: {event.event_type}")
+                    logger.warning(f"Unknown event type: {event_type}")
                     
             except Exception as e:
                 # Log but continue processing other events
@@ -444,7 +523,15 @@ class StateIntegrator:
         Update time-based tracking fields.
         """
         # Check if a meal occurred in this step
-        had_meal = any(e.event_type == "meal" for e in events)
+        # Handle both string and enum event_type
+        had_meal = False
+        for e in events:
+            event_type = e.event_type
+            if hasattr(event_type, 'value'):
+                event_type = event_type.value
+            if event_type == "meal":
+                had_meal = True
+                break
         
         if had_meal:
             # Already set in _process_meal_event

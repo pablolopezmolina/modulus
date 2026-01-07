@@ -12,13 +12,13 @@
 
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
-FASE 1 (24h Engine):        ████████░░░░░░░░░░░░   40% 🔨 EN PROGRESO
+FASE 1 (24h Engine):        ██████████░░░░░░░░░░   50% 🔨 EN PROGRESO
 FASE 2 (Pack 1 - €50k):     ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░   0%
 
-TOTAL PROGRESO:             ~40% (Capa 1 Foundation + FASE 0 + Sesiones 1.1-2.2)
+TOTAL PROGRESO:             ~50% de FASE 1 (Capa 1 Foundation + FASE 0 + Sesiones 1.1-2.3)
 ```
 
 ---
@@ -182,8 +182,8 @@ Deben integrarse en la nueva arquitectura sin reescribir.
   * alertness_score: [0, 100] ✅
   * hours_since_last_meal >= 0 ✅
 - Rechaza NaN e Inf en todos los campos numéricos ✅
-- Factory methods:
-  * create_fasted_state(person) - usa create_reference_person() ✅
+- Factory functions:
+  * create_fasted_state(person) ✅
   * create_initial_state(person) ✅
 - with_updates(**kwargs) para actualizaciones inmutables ✅
 - Propiedades computadas: time_hours, is_hypoglycemic, is_hyperglycemic, has_caffeine ✅
@@ -198,7 +198,7 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 ```
 
 **Completado:** 2025-01-07
-**Tests:** 15 tests nuevos (203 tests total: 192 unit + 11 integration)
+**Tests:** 15 tests nuevos
 **Verificado:**
 - StateIntegrator.step() retorna PhysiologicalState válido ✅
 - Contract 2.4 compliance: error → previous state + warning ✅
@@ -212,10 +212,36 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 - Adenosine receptor occupancy modelada ✅
 - Compatible con PhysiologicalState real de Sesión 2.1 ✅
 
-### Sesión 2.3: StateIntegrator (simulate_timeline) 🔨 SIGUIENTE
+### Sesión 2.3: StateIntegrator (simulate_timeline) ✅
 ```
-[ ] src/core/state/integrator.py (añadir simulate_timeline)
-[ ] tests/unit/test_integrator_24h.py
+[x] src/core/state/integrator.py (añadir simulate_timeline)
+[x] tests/unit/test_integrator_24h.py
+```
+
+**Completado:** 2025-01-07
+**Tests:** 30 tests nuevos (233 tests total: 222 unit + 11 integration)
+**Verificado:**
+- simulate_timeline() retorna List[PhysiologicalState] ✅
+- Contract 2.4 compliance: estados para t=0, dt, 2*dt, ..., 1440 ✅
+- Con dt=1.0 retorna 1441 estados ✅
+- Con dt=5.0 retorna 289 estados ✅
+- Con dt=10.0 retorna 145 estados ✅
+- Eventos se aplican en el timestep correcto ✅
+- Soporta timelines vacíos (baseline fisiológico) ✅
+- Soporta múltiples eventos (GS05-style full day) ✅
+- Timestamps monotónicamente crecientes ✅
+- Glucosa aumenta después de comidas ✅
+- Cafeína aparece después de ingestión ✅
+- Cafeína se acumula con múltiples dosis ✅
+- hours_since_last_meal se resetea correctamente ✅
+- Reproducibilidad: mismos inputs = mismos outputs ✅
+- Reset de _pending_caffeine_mg al inicio de simulación ✅
+
+### Sesión 3.1: DaySimulator 🔨 SIGUIENTE
+```
+[ ] src/core/simulation/__init__.py
+[ ] src/core/simulation/day_simulator.py
+[ ] tests/unit/test_day_simulator.py
 ```
 
 ### Semana 3: DaySimulator + PDF v0
@@ -318,13 +344,14 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | `tests/unit/test_timeline.py` | ✅ | 51 tests |
 | `tests/unit/test_state.py` | ✅ | 57 tests |
 | `tests/unit/test_integrator.py` | ✅ | 15 tests |
+| `tests/unit/test_integrator_24h.py` | ✅ | 30 tests |
 | `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
 | `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
 | `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests (no ejecutados en make check) |
 | `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests (no ejecutados en make check) |
 | `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests (no ejecutados en make check) |
 
-**Total en `make check`:** 203 tests pasando (192 unit + 11 integration)
+**Total en `make check`:** 233 tests pasando (222 unit + 11 integration)
 
 ---
 
@@ -362,15 +389,15 @@ modulus/
 │   │   ├── timeline/        ✅ (Sesiones 1.1-1.2)
 │   │   │   ├── __init__.py  ✅ (exporta Event, EventType, Timeline)
 │   │   │   └── timeline.py  ✅
-│   │   ├── state/           ✅ (Sesiones 2.1-2.2)
+│   │   ├── state/           ✅ (Sesiones 2.1-2.3)
 │   │   │   ├── __init__.py  ✅ (exporta PhysiologicalState, StateIntegrator)
 │   │   │   ├── state.py     ✅
-│   │   │   └── integrator.py ✅
+│   │   │   └── integrator.py ✅ (con simulate_timeline)
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
 │   │   ├── compounds/       ❌ (Fase 2)
 │   │   ├── interactions/    ❌ (Fase 3)
-│   │   ├── simulation/      ❌ (Fase 1)
+│   │   ├── simulation/      ❌ (Fase 1 - siguiente)
 │   │   ├── engine.py        ✅
 │   │   └── adapters.py      ✅
 │   │
@@ -388,6 +415,7 @@ modulus/
 │   │   ├── test_timeline.py  ✅ 51 tests
 │   │   ├── test_state.py     ✅ 57 tests
 │   │   ├── test_integrator.py ✅ 15 tests
+│   │   ├── test_integrator_24h.py ✅ 30 tests
 │   │   └── test_sanity.py    ✅ 9 tests
 │   ├── integration/
 │   │   ├── __init__.py      ✅
@@ -408,27 +436,32 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 1, Sesión 2.3: StateIntegrator (simulate_timeline)**
+**FASE 1, Sesión 3.1: DaySimulator**
 
 ```
-OBJETIVO: Añadir simulate_timeline() para simular 24h completas
-
-ARCHIVOS A MODIFICAR:
-- src/core/state/integrator.py (añadir método)
+OBJETIVO: Crear DaySimulator que envuelve StateIntegrator y produce DaySimulationResult
 
 ARCHIVOS A CREAR:
-- tests/unit/test_integrator_24h.py
+- src/core/simulation/__init__.py
+- src/core/simulation/day_simulator.py
+- tests/unit/test_day_simulator.py
 
-ESPECIFICACIÓN (Contract 2.4):
-- simulate_timeline(initial_state, timeline, dt_minutes=1.0) → List[PhysiologicalState]
-- Retorna estados para t=0, dt, 2*dt, ..., 1440
-- Usa step() internamente para cada timestep
-- Aplica eventos cuando timestamp coincide
+ESPECIFICACIÓN (Contract 5.1):
+- class DaySimulator
+- __init__(person)
+- simulate(timeline) → DaySimulationResult
+- DaySimulationResult contiene:
+  * time_minutes: np.ndarray (1440 puntos)
+  * glucose_curve: np.ndarray
+  * caffeine_curve: np.ndarray
+  * alertness_curve: np.ndarray
+  * metrics: Dict[str, float]
+  * is_valid: bool
 
 CRITERIOS DE ÉXITO:
-- simulate_timeline retorna 1441 estados (para dt=1.0)
-- Eventos se aplican en el timestep correcto
-- Golden scenario GS05 (Full Day) debe pasar
+- DaySimulator usa StateIntegrator internamente
+- DaySimulationResult tiene curvas como numpy arrays
+- Métricas básicas calculadas (peak, time_to_peak, etc.)
 - make check pasa
 ```
 
@@ -445,4 +478,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | 1.1 | ✅ Timeline Event: Módulo timeline/ creado, re-exporta Event de contracts/. 26 tests. |
 | 2025-01-07 | 1.2 | ✅ Timeline: Clase inmutable, ordenada, Contract 2.2 compliant. 51 tests. 131 tests total. |
 | 2025-01-07 | 2.1 | ✅ PhysiologicalState: Módulo state/ con validación completa, factories, with_updates, propiedades computadas. 57 tests. 188 tests total. |
-| 2025-01-07 | 2.2 | ✅ StateIntegrator: step() con glucose/caffeine dynamics, eventos meal/ingestion, hours_since_last_meal tracking. 15 tests. **203 tests total.** |
+| 2025-01-07 | 2.2 | ✅ StateIntegrator: step() con glucose/caffeine dynamics, eventos meal/ingestion, hours_since_last_meal tracking. 15 tests. 203 tests total. |
+| 2025-01-07 | 2.3 | ✅ StateIntegrator: simulate_timeline() para 24h completas, Contract 2.4 compliant. 30 tests. **233 tests total.** |
