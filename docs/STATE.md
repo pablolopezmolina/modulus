@@ -1,5 +1,5 @@
 # MODULUS — Development State
-# Last Updated: 2025-01-06
+# Last Updated: 2025-01-07
 #
 # ⚠️  ACTUALIZAR DESPUÉS DE CADA SESIÓN DE DESARROLLO
 # ⚠️  EL LLM DEBE LEER ESTO PARA SABER QUÉ ESTÁ HECHO
@@ -12,13 +12,13 @@
 
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
-FASE 1 (24h Engine):        ░░░░░░░░░░░░░░░░░░░░   0%  🔨 SIGUIENTE
+FASE 1 (24h Engine):        ██░░░░░░░░░░░░░░░░░░   10% 🔨 EN PROGRESO
 FASE 2 (Pack 1 - €50k):     ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░   0%
 
-TOTAL PROGRESO:             ~28% (Capa 1 Foundation + FASE 0 completa)
+TOTAL PROGRESO:             ~30% (Capa 1 Foundation + FASE 0 + Sesión 1.1)
 ```
 
 ---
@@ -120,16 +120,25 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 
 ---
 
-## FASE 1: 24H ENGINE 🔨 SIGUIENTE
+## FASE 1: 24H ENGINE 🔨 EN PROGRESO
 
-### Sesión 1.1: Event (dataclass + validación) 🔨 SIGUIENTE
+### Sesión 1.1: Event (dataclass + validación) ✅
 ```
-[ ] src/core/timeline/__init__.py
-[ ] src/core/timeline/event.py
-[ ] tests/unit/test_event.py
+[x] src/core/timeline/__init__.py
+[x] tests/unit/test_event.py
 ```
 
-### Sesión 1.2: Timeline (inmutable, ordenada)
+**Completado:** 2025-01-07
+**Tests:** 26 tests nuevos (69 unit tests total, 80 con integration)
+**Verificado:**
+- Event re-exportado desde contracts/ (single source of truth) ✅
+- Contract 2.1 compliance: timestamp [0,1440], event_types, payload validation ✅
+- Inmutabilidad (frozen) ✅
+- Serialización to_dict/from_dict ✅
+- Factory methods create_ingestion/create_meal ✅
+- Nota: Event NO es hashable debido a payload dict (documentado, aceptable para Timeline)
+
+### Sesión 1.2: Timeline (inmutable, ordenada) 🔨 SIGUIENTE
 ```
 [ ] src/core/timeline/timeline.py
 [ ] tests/unit/test_timeline.py
@@ -240,13 +249,14 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | Suite | Estado | Tests |
 |-------|--------|-------|
 | `tests/unit/test_contracts.py` | ✅ | 34 tests |
+| `tests/unit/test_event.py` | ✅ | 26 tests |
 | `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
 | `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
 | `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests |
 | `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests |
 | `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests |
 
-**Total:** 91 tests pasando
+**Total:** 117 tests pasando
 
 ---
 
@@ -281,9 +291,10 @@ modulus/
 │   │   │   ├── events.py    ✅
 │   │   │   ├── state.py     ✅
 │   │   │   └── results.py   ✅
+│   │   ├── timeline/        ✅ (Sesión 1.1)
+│   │   │   └── __init__.py  ✅
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
-│   │   ├── timeline/        ❌ (Fase 1)
 │   │   ├── state/           ❌ (Fase 1)
 │   │   ├── compounds/       ❌ (Fase 2)
 │   │   ├── interactions/    ❌ (Fase 3)
@@ -301,6 +312,7 @@ modulus/
 │   ├── unit/
 │   │   ├── __init__.py      ✅
 │   │   ├── test_contracts.py ✅ 34 tests
+│   │   ├── test_event.py     ✅ 26 tests
 │   │   └── test_sanity.py    ✅ 9 tests
 │   ├── integration/
 │   │   ├── __init__.py      ✅
@@ -321,26 +333,27 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 1, Sesión 1.1: Event (dataclass + validación)**
+**FASE 1, Sesión 1.2: Timeline (inmutable, ordenada)**
 
 ```
-OBJETIVO: Crear el tipo Event para el Timeline Engine
+OBJETIVO: Crear la clase Timeline que maneja lista ordenada de Events
 
 ARCHIVOS A CREAR:
-- src/core/timeline/__init__.py
-- src/core/timeline/event.py
-- tests/unit/test_event.py
+- src/core/timeline/timeline.py
+- tests/unit/test_timeline.py
 
-ESPECIFICACIÓN:
-- @dataclass(frozen=True) Event
-- Campos: timestamp_minutes, event_type, payload
-- Tipos: "ingestion" | "meal" | "exercise" | "sleep"
-- Validación: timestamp en [0, 1440], tipos válidos
-- Métodos: to_dict(), from_dict()
+ESPECIFICACIÓN (Contract 2.2):
+- class Timeline (inmutable)
+- events: List[Event] SIEMPRE ordenados por timestamp_minutes
+- add_event(event) → nueva Timeline (inmutabilidad)
+- get_events_in_range(start, end) → List[Event]
+- validate() → bool
+- to_json() / from_json()
+- Dos eventos NO pueden tener el mismo timestamp exacto
 
 CRITERIOS DE ÉXITO:
-- Event es frozen dataclass (inmutable)
-- Validación de timestamp y event_type
+- Timeline es inmutable
+- Events siempre ordenados por timestamp
 - Tests unitarios pasan
 - make check pasa
 ```
@@ -355,3 +368,4 @@ CRITERIOS DE ÉXITO:
 | 2025-01-06 | 0.1 | ✅ Contratos ejecutables: Event, PhysiologicalState, SimulationResult. 34 tests. |
 | 2025-01-06 | 0.2 | ✅ CI Local: Makefile (python3), dependency rules, ENVIRONMENT.md. 54 tests total. |
 | 2025-01-06 | 0.3 | ✅ Golden Scenarios: GS01 (OGTT), GS02 (Coffee), GS10 (Reproducibility). 91 tests total. **FASE 0 COMPLETADA.** |
+| 2025-01-07 | 1.1 | ✅ Timeline Event: Módulo timeline/ creado, re-exporta Event de contracts/. 26 tests. 80 tests total. |
