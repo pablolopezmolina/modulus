@@ -12,13 +12,13 @@
 
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
-FASE 1 (24h Engine):        ████░░░░░░░░░░░░░░░░   20% 🔨 EN PROGRESO
+FASE 1 (24h Engine):        ██████░░░░░░░░░░░░░░   30% 🔨 EN PROGRESO
 FASE 2 (Pack 1 - €50k):     ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░   0%
 
-TOTAL PROGRESO:             ~35% (Capa 1 Foundation + FASE 0 + Sesiones 1.1-1.2)
+TOTAL PROGRESO:             ~38% (Capa 1 Foundation + FASE 0 + Sesiones 1.1-2.1)
 ```
 
 ---
@@ -146,7 +146,7 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 ```
 
 **Completado:** 2025-01-07
-**Tests:** 51 tests nuevos (131 tests total: 120 unit + 11 integration)
+**Tests:** 51 tests nuevos
 **Verificado:**
 - Timeline almacena events como tuple (inmutable) ✅
 - add_event() retorna NUEVA Timeline (inmutabilidad) ✅
@@ -160,14 +160,37 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 - Soporta iteración y len() ✅
 - Contract 2.2 100% cumplido ✅
 
-### Sesión 2.1: PhysiologicalState 🔨 SIGUIENTE
+### Sesión 2.1: PhysiologicalState ✅
 ```
-[ ] src/core/state/__init__.py
-[ ] src/core/state/state.py
-[ ] tests/unit/test_state.py
+[x] src/core/state/__init__.py
+[x] src/core/state/state.py
+[x] tests/unit/test_state.py
 ```
 
-### Sesión 2.2-2.3: StateIntegrator
+**Completado:** 2025-01-07
+**Tests:** 57 tests nuevos (188 tests total: 177 unit + 11 integration)
+**Verificado:**
+- PhysiologicalState es frozen (inmutable) ✅
+- Contract 2.3 compliance: todos los campos validados ✅
+- Validación de rangos fisiológicos:
+  * timestamp_minutes >= 0 ✅
+  * glucose_plasma_mg_dl: [20, 600] mg/dL ✅
+  * insulin_plasma_mu_l: [0, 1000] mU/L ✅
+  * glucose_gut_mg >= 0 ✅
+  * caffeine_plasma_mg_l: [0, 100] mg/L ✅
+  * adenosine_receptor_occupancy: [0, 1] ✅
+  * alertness_score: [0, 100] ✅
+  * hours_since_last_meal >= 0 ✅
+- Rechaza NaN e Inf en todos los campos numéricos ✅
+- Factory methods:
+  * create_fasted_state(person) - usa create_reference_person() ✅
+  * create_initial_state(person) ✅
+- with_updates(**kwargs) para actualizaciones inmutables ✅
+- Propiedades computadas: time_hours, is_hypoglycemic, is_hyperglycemic, has_caffeine ✅
+- Serialización: to_dict(), from_dict() ✅
+- Hashable (para uso en sets/dicts) ✅
+
+### Sesión 2.2-2.3: StateIntegrator 🔨 SIGUIENTE
 ```
 [ ] src/core/state/integrator.py
 [ ] tests/unit/test_integrator.py
@@ -272,13 +295,14 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | `tests/unit/test_contracts.py` | ✅ | 34 tests |
 | `tests/unit/test_event.py` | ✅ | 26 tests |
 | `tests/unit/test_timeline.py` | ✅ | 51 tests |
+| `tests/unit/test_state.py` | ✅ | 57 tests |
 | `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
 | `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
-| `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests |
-| `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests |
-| `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests |
+| `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests (no ejecutados en make check) |
+| `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests (no ejecutados en make check) |
+| `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests (no ejecutados en make check) |
 
-**Total:** 131 tests pasando (120 unit + 11 integration)
+**Total en `make check`:** 188 tests pasando (177 unit + 11 integration)
 
 ---
 
@@ -316,9 +340,11 @@ modulus/
 │   │   ├── timeline/        ✅ (Sesiones 1.1-1.2)
 │   │   │   ├── __init__.py  ✅ (exporta Event, EventType, Timeline)
 │   │   │   └── timeline.py  ✅
+│   │   ├── state/           ✅ (Sesión 2.1)
+│   │   │   ├── __init__.py  ✅
+│   │   │   └── state.py     ✅
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
-│   │   ├── state/           ❌ (Fase 1 - siguiente)
 │   │   ├── compounds/       ❌ (Fase 2)
 │   │   ├── interactions/    ❌ (Fase 3)
 │   │   ├── simulation/      ❌ (Fase 1)
@@ -337,6 +363,7 @@ modulus/
 │   │   ├── test_contracts.py ✅ 34 tests
 │   │   ├── test_event.py     ✅ 26 tests
 │   │   ├── test_timeline.py  ✅ 51 tests
+│   │   ├── test_state.py     ✅ 57 tests
 │   │   └── test_sanity.py    ✅ 9 tests
 │   ├── integration/
 │   │   ├── __init__.py      ✅
@@ -357,40 +384,27 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 1, Sesión 2.1: PhysiologicalState**
+**FASE 1, Sesión 2.2: StateIntegrator (step)**
 
 ```
-OBJETIVO: Crear PhysiologicalState para representar estado del cuerpo en cada timestep
+OBJETIVO: Crear StateIntegrator para avanzar el estado fisiológico en el tiempo
 
 ARCHIVOS A CREAR:
-- src/core/state/__init__.py
-- src/core/state/state.py
-- tests/unit/test_state.py
+- src/core/state/integrator.py
+- tests/unit/test_integrator.py
 
-ESPECIFICACIÓN (Contract 2.3):
-- @dataclass(frozen=True) PhysiologicalState
-- Campos principales:
-  * timestamp_minutes: float
-  * glucose_plasma_mg_dl: float
-  * insulin_plasma_mu_l: float
-  * glucose_gut_mg: float
-  * caffeine_plasma_mg_l: float
-  * adenosine_receptor_occupancy: float (0-1)
-  * alertness_score: float (0-100)
-  * is_fasted: bool
-  * hours_since_last_meal: float
-- Validación: todos los valores en rangos fisiológicos
-- Factory: create_fasted_state(person) → PhysiologicalState
-- with_updates(**kwargs) → nuevo estado
-
-NOTA: Ya existe PhysiologicalState en contracts/state.py
-Verificar si cumple Contract 2.3 o necesita extensión.
+ESPECIFICACIÓN (Contract 2.4):
+- class StateIntegrator
+- __init__(person, glucose_model, caffeine_model)
+- step(current_state, events, dt_minutes) → new_state
+- Integra DallaManModel y EliteCaffeineModel existentes
+- Maneja eventos "meal" y "ingestion"
 
 CRITERIOS DE ÉXITO:
-- PhysiologicalState es inmutable (frozen)
-- Validación de rangos fisiológicos
-- Factory method funcional
-- Tests unitarios pasan
+- step() retorna nuevo estado válido
+- Maneja eventos de comida (actualiza glucose_gut)
+- Maneja eventos de ingestión de cafeína
+- Golden scenarios GS01 y GS02 siguen pasando
 - make check pasa
 ```
 
@@ -406,3 +420,4 @@ CRITERIOS DE ÉXITO:
 | 2025-01-06 | 0.3 | ✅ Golden Scenarios: GS01 (OGTT), GS02 (Coffee), GS10 (Reproducibility). 91 tests total. **FASE 0 COMPLETADA.** |
 | 2025-01-07 | 1.1 | ✅ Timeline Event: Módulo timeline/ creado, re-exporta Event de contracts/. 26 tests. |
 | 2025-01-07 | 1.2 | ✅ Timeline: Clase inmutable, ordenada, Contract 2.2 compliant. 51 tests. 131 tests total. |
+| 2025-01-07 | 2.1 | ✅ PhysiologicalState: Módulo state/ con validación completa, factories (create_fasted_state, create_initial_state), with_updates, propiedades computadas. 57 tests. **188 tests total.** |
