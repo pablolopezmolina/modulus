@@ -12,13 +12,13 @@
 
 ```
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
-FASE 1 (24h Engine):        ██████████████░░░░░░   70% 🔨 EN PROGRESO
+FASE 1 (24h Engine):        ████████████████░░░░   80% 🔨 EN PROGRESO
 FASE 2 (Pack 1 - €50k):     ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 3 (Pack 2 - €250k):    ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░   0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░   0%
 
-TOTAL PROGRESO:             ~70% de FASE 1 (Sesiones 1.1-3.1 completadas)
+TOTAL PROGRESO:             ~80% de FASE 1 (Sesiones 1.1-3.2 completadas)
 ```
 
 ---
@@ -260,14 +260,27 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 - warnings es lista (vacía por ahora) ✅
 - Reproducibilidad: mismos inputs = mismos outputs ✅
 
-### Sesión 3.2: Métricas Básicas 🔨 SIGUIENTE
+### Sesión 3.2: Métricas Básicas ✅
 ```
-[ ] src/analysis/__init__.py
-[ ] src/analysis/metrics.py
-[ ] tests/unit/test_metrics.py
+[x] src/analysis/__init__.py
+[x] src/analysis/metrics.py
+[x] tests/unit/test_metrics.py
 ```
 
-### Sesión 3.3: PDF Generator v0
+**Completado:** 2025-01-07
+**Tests:** 40 tests nuevos (308 tests total: 297 unit + 11 integration)
+**Verificado:**
+- Métricas de glucosa: peak, time_to_peak, auc, time_above_threshold ✅
+- Métricas de cafeína: peak, half_life ✅
+- Métricas de alertness: peak, duration_above_threshold ✅
+- Métricas de riesgo: sleep_disruption_risk (sigmoid basado en cafeína a las 22:00) ✅
+- MetricsCalculator class para cálculo batch ✅
+- calculate_all_metrics() devuelve dict con 9 métricas ✅
+- Funciones puras (sin side effects) ✅
+- Manejo de edge cases: arrays vacíos, NaN, Inf ✅
+- Compatible con numpy >= 2.0 (usa trapezoid con fallback) ✅
+
+### Sesión 3.3: PDF Generator v0 🔨 SIGUIENTE
 ```
 [ ] src/reporting/__init__.py
 [ ] src/reporting/pdf_generator.py
@@ -366,13 +379,14 @@ Deben integrarse en la nueva arquitectura sin reescribir.
 | `tests/unit/test_integrator.py` | ✅ | 15 tests |
 | `tests/unit/test_integrator_24h.py` | ✅ | 30 tests |
 | `tests/unit/test_day_simulator.py` | ✅ | 35 tests |
+| `tests/unit/test_metrics.py` | ✅ | 40 tests |
 | `tests/unit/test_sanity.py` | ✅ | 9 tests (heredado v1) |
 | `tests/integration/test_dependency_rules.py` | ✅ | 11 tests |
 | `tests/golden/test_gs01_ogtt.py` | ✅ | 11 tests (no ejecutados en make check) |
 | `tests/golden/test_gs02_coffee.py` | ✅ | 14 tests (no ejecutados en make check) |
 | `tests/golden/test_gs10_reproducibility.py` | ✅ | 12 tests (no ejecutados en make check) |
 
-**Total en `make check`:** 268 tests pasando (257 unit + 11 integration)
+**Total en `make check`:** 308 tests pasando (297 unit + 11 integration)
 
 ---
 
@@ -424,7 +438,9 @@ modulus/
 │   │   ├── engine.py        ✅
 │   │   └── adapters.py      ✅
 │   │
-│   ├── analysis/            ❌ (Sesión 3.2 - siguiente)
+│   ├── analysis/            ✅ (Sesión 3.2)
+│   │   ├── __init__.py      ✅
+│   │   └── metrics.py       ✅
 │   ├── reporting/           ❌ (Sesión 3.3)
 │   └── api/
 │       └── main.py          ✅
@@ -440,6 +456,7 @@ modulus/
 │   │   ├── test_integrator.py ✅ 15 tests
 │   │   ├── test_integrator_24h.py ✅ 30 tests
 │   │   ├── test_day_simulator.py ✅ 35 tests
+│   │   ├── test_metrics.py   ✅ 40 tests
 │   │   └── test_sanity.py    ✅ 9 tests
 │   ├── integration/
 │   │   ├── __init__.py      ✅
@@ -460,27 +477,27 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 1, Sesión 3.2: Métricas Básicas**
+**FASE 1, Sesión 3.3: PDF Generator v0**
 
 ```
-OBJETIVO: Crear módulo de métricas para calcular indicadores de negocio
+OBJETIVO: Generar PDF básico de 6-10 páginas con resultados de simulación
 
 ARCHIVOS A CREAR:
-- src/analysis/__init__.py
-- src/analysis/metrics.py
-- tests/unit/test_metrics.py
+- src/reporting/__init__.py
+- src/reporting/pdf_generator.py
+- src/reporting/charts.py
+- tests/unit/test_pdf_generator.py
 
-MÉTRICAS A IMPLEMENTAR:
-- glucose_peak, glucose_time_to_peak, glucose_auc
-- caffeine_peak, caffeine_half_life
-- alertness_peak, alertness_duration_above_60
-- time_above_glucose_140 (% del día)
-- sleep_disruption_risk (caffeine >1mg/L at 22:00)
+PÁGINAS A GENERAR:
+1. Executive Summary
+2-3. Curvas 24h (glucosa, cafeína, alertness)
+4. Métricas principales
+5. Warnings básicos
+6. Methodology brief
 
 CRITERIOS DE ÉXITO:
-- Métricas calculadas a partir de DaySimulationResult
-- Funciones puras (sin side effects)
-- Tests unitarios para cada métrica
+- PDF se genera sin errores
+- Gráficos matplotlib embebidos
 - make check pasa
 ```
 
@@ -500,3 +517,4 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | 2.2 | ✅ StateIntegrator: step() con glucose/caffeine dynamics, eventos meal/ingestion, hours_since_last_meal tracking. 15 tests. 203 tests total. |
 | 2025-01-07 | 2.3 | ✅ StateIntegrator: simulate_timeline() para 24h completas, Contract 2.4 compliant. 30 tests. 233 tests total. |
 | 2025-01-07 | 3.1 | ✅ DaySimulator: Orquestador 24h con curvas numpy y métricas básicas. Contract 5.1 compliant. 35 tests. **268 tests total.** |
+| 2025-01-07 | 3.2 | ✅ Métricas Básicas: 9 métricas (glucose, caffeine, alertness, risk). Funciones puras. 40 tests. **308 tests total.** |
