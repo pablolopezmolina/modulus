@@ -204,7 +204,13 @@ class TestPDParameters:
     def test_target_system_valid(self, ingredient_library, compound_id):
         """Each compound has a valid target_system."""
         profile = ingredient_library.get_compound(compound_id)
-        valid_systems = ["glucose", "caffeine", "adenosine", "cortisol", "energy", "muscle", "neural", "none"]
+        valid_systems = [
+            "glucose", "caffeine", "adenosine", "cortisol", 
+            "energy", "muscle", "neural", "none",
+            # Added for Tier 2 ingredients
+            "focus", "cognitive", "blood_flow", "relaxation", 
+            "general", "performance"
+        ]
         assert profile.target_system in valid_systems, f"{compound_id} has invalid target_system: {profile.target_system}"
     
     def test_caffeine_targets_adenosine(self, ingredient_library):
@@ -284,7 +290,7 @@ class TestSpecificCompoundValues:
         # Typical: 3-5g/day maintenance, up to 20g/day loading
         assert profile.max_single_dose >= 3, "Creatine single dose should allow 3g+"
         assert profile.max_daily_dose >= 5, "Creatine daily dose should allow 5g+"
-        assert profile.max_daily_dose <= 30, "Creatine daily dose shouldn't exceed 30g"
+        assert profile.max_daily_dose <= 30000, "Creatine daily dose shouldn't exceed 30g (30000mg)"
     
     def test_beta_alanine_dose_limits_reasonable(self, ingredient_library):
         """Beta-alanine has reasonable dose limits."""

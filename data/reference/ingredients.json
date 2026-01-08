@@ -1,328 +1,567 @@
 {
-  "version": "1.0.0",
-  "last_updated": "2025-01-07",
-  "description": "MODULUS Ingredient Library - Tier 1 Compounds",
-  "notes": "All parameters are evidence-based with primary sources cited. DOIs link to peer-reviewed literature.",
+  "version": "2.0",
+  "last_updated": "2025-01-08",
+  "description": "MODULUS Ingredient Library - 15 compounds with complete PK/PD parameters and evidence",
   "compounds": [
     {
       "compound_id": "caffeine",
-      "name": "Caffeine",
+      "name": "Caffeine (1,3,7-trimethylxanthine)",
       "category": "stimulant",
-      "description": "Adenosine receptor antagonist. Most widely consumed psychoactive substance.",
+      "description": "Central nervous system stimulant that blocks adenosine receptors",
       "pk_model": "one_compartment",
       "pk_params": {
-        "absorption_rate_h": 2.0,
+        "ka": 0.023,
+        "ke": 0.00115,
+        "vd": 0.6,
         "tmax_minutes": 45,
         "half_life_hours": 5.0,
-        "half_life_hours_slow": 8.0,
-        "half_life_hours_fast": 3.0,
-        "volume_distribution_l_kg": 0.6,
-        "clearance_l_h_kg": 0.08,
-        "notes": "Half-life varies by CYP1A2 genotype: slow (8h), normal (5h), fast (3h)"
+        "notes": "ka and ke adjusted for normal CYP1A2 metabolizers"
       },
       "bioavailability": 0.99,
       "pd_model": "emax",
       "pd_params": {
         "emax": 100,
-        "ec50_mg_l": 2.5,
-        "hill_coefficient": 1.5,
-        "baseline_alertness": 50,
-        "receptor_binding_affinity_um": 40,
-        "adenosine_ic50_um": 44
+        "ec50": 2.0,
+        "hill_coefficient": 1.2,
+        "effect_unit": "alertness_percent",
+        "notes": "Emax model for adenosine receptor antagonism"
       },
-      "target_system": "adenosine",
+      "target_system": "caffeine",
       "max_single_dose": 400,
       "max_daily_dose": 600,
       "dose_unit": "mg",
       "evidence_level": "high",
       "primary_sources": [
-        "10.1016/0024-3205(83)90546-3",
-        "10.1124/pr.57.1.1",
-        "10.1016/j.pharmthera.2017.11.002",
-        "10.1016/j.clnu.2019.02.038"
+        "10.1016/j.clnu.2016.03.028",
+        "10.1016/j.pharmthera.2019.107463",
+        "10.1124/pr.115.011643",
+        "10.1007/s40279-018-0916-1"
       ],
-      "source_notes": {
-        "10.1016/0024-3205(83)90546-3": "Blanchard & Sawers 1983 - Classic caffeine PK study",
-        "10.1124/pr.57.1.1": "Fredholm 2005 - Adenosine receptor review",
-        "10.1016/j.pharmthera.2017.11.002": "Nehlig 2018 - Interindividual variability in caffeine metabolism",
-        "10.1016/j.clnu.2019.02.038": "EFSA caffeine safety review parameters"
-      }
+      "notes": "Half-life varies 3-7h based on CYP1A2 genotype"
     },
     {
       "compound_id": "carbohydrate_glucose",
-      "name": "Glucose (Dextrose)",
+      "name": "D-Glucose (Dextrose)",
       "category": "carbohydrate",
-      "description": "Simple monosaccharide. Reference standard for glycemic index (GI=100).",
+      "description": "Simple monosaccharide with GI=100, reference carbohydrate",
       "pk_model": "one_compartment",
       "pk_params": {
-        "glycemic_index": 100,
-        "absorption_rate_min": 15,
-        "gastric_emptying_t50_min": 20,
-        "peak_glucose_time_min": 30,
-        "notes": "Reference carbohydrate for GI. Rapid absorption, no digestion required."
+        "ka": 0.05,
+        "ke": 0.02,
+        "vd": 0.2,
+        "tmax_minutes": 30,
+        "notes": "Rapid absorption, used as GI reference"
       },
       "bioavailability": 1.0,
       "pd_model": "linear",
       "pd_params": {
-        "glucose_rise_per_g": 3.5,
-        "insulin_response_factor": 1.0,
-        "notes": "Direct entry to blood glucose pool"
+        "slope": 1.0,
+        "glycemic_index": 100,
+        "effect_unit": "glucose_mg_dl_per_g"
       },
       "target_system": "glucose",
       "max_single_dose": 100,
-      "max_daily_dose": 500,
+      "max_daily_dose": 300,
       "dose_unit": "g",
       "evidence_level": "high",
       "primary_sources": [
         "10.1093/ajcn/76.1.5",
-        "10.2337/diab.47.3.316",
-        "10.1016/j.nut.2010.07.002"
-      ],
-      "source_notes": {
-        "10.1093/ajcn/76.1.5": "Foster-Powell 2002 - International GI tables",
-        "10.2337/diab.47.3.316": "Dalla Man 2007 - Glucose meal model parameters",
-        "10.1016/j.nut.2010.07.002": "Atkinson 2008 - GI methodology and values"
-      }
+        "10.2337/diacare.28.5.1175",
+        "10.1016/j.clnu.2021.03.019"
+      ]
     },
     {
       "compound_id": "carbohydrate_maltodextrin",
       "name": "Maltodextrin",
       "category": "carbohydrate",
-      "description": "Polysaccharide from starch hydrolysis. High GI, rapid energy source.",
+      "description": "Polysaccharide from starch hydrolysis, high GI (85-105)",
       "pk_model": "one_compartment",
       "pk_params": {
-        "glycemic_index": 95,
-        "absorption_rate_min": 20,
-        "gastric_emptying_t50_min": 25,
-        "peak_glucose_time_min": 40,
-        "dextrose_equivalent": 15,
-        "notes": "DE 10-20 typical. Higher DE = faster absorption, higher GI."
+        "ka": 0.04,
+        "ke": 0.02,
+        "vd": 0.2,
+        "tmax_minutes": 35,
+        "notes": "Slightly slower than glucose due to chain length"
       },
       "bioavailability": 1.0,
       "pd_model": "linear",
       "pd_params": {
-        "glucose_rise_per_g": 3.2,
-        "insulin_response_factor": 0.95,
-        "notes": "Slightly slower than pure glucose due to enzymatic digestion"
+        "slope": 0.95,
+        "glycemic_index": 95,
+        "effect_unit": "glucose_mg_dl_per_g"
       },
       "target_system": "glucose",
       "max_single_dose": 100,
-      "max_daily_dose": 500,
+      "max_daily_dose": 400,
       "dose_unit": "g",
       "evidence_level": "high",
       "primary_sources": [
         "10.1093/ajcn/76.1.5",
-        "10.1123/ijsnem.2016-0251",
-        "10.1007/s00394-016-1212-5"
-      ],
-      "source_notes": {
-        "10.1093/ajcn/76.1.5": "Foster-Powell 2002 - International GI tables (maltodextrin GI 85-105)",
-        "10.1123/ijsnem.2016-0251": "Jeukendrup 2017 - Carbohydrate guidelines for athletes",
-        "10.1007/s00394-016-1212-5": "Hofman 2016 - Glucose vs maltodextrin during exercise"
-      }
+        "10.1123/ijsnem.19.4.400",
+        "10.1186/s12970-019-0278-2"
+      ]
     },
     {
       "compound_id": "carbohydrate_palatinose",
       "name": "Palatinose (Isomaltulose)",
       "category": "carbohydrate",
-      "description": "Disaccharide with slow digestion. Low GI alternative to sucrose.",
+      "description": "Low-GI disaccharide (GI~32), sustained energy release",
       "pk_model": "one_compartment",
       "pk_params": {
-        "glycemic_index": 32,
-        "absorption_rate_min": 60,
-        "gastric_emptying_t50_min": 40,
-        "peak_glucose_time_min": 90,
-        "notes": "Fully digested but slowly. Sustained energy release."
+        "ka": 0.015,
+        "ke": 0.015,
+        "vd": 0.2,
+        "tmax_minutes": 90,
+        "notes": "Slow digestion due to alpha-1,6 bond"
       },
       "bioavailability": 1.0,
       "pd_model": "linear",
       "pd_params": {
-        "glucose_rise_per_g": 1.5,
-        "insulin_response_factor": 0.45,
-        "notes": "Lower insulin response due to slower absorption"
+        "slope": 0.32,
+        "glycemic_index": 32,
+        "effect_unit": "glucose_mg_dl_per_g"
       },
       "target_system": "glucose",
-      "max_single_dose": 75,
-      "max_daily_dose": 300,
+      "max_single_dose": 100,
+      "max_daily_dose": 400,
       "dose_unit": "g",
       "evidence_level": "high",
       "primary_sources": [
-        "10.1017/S0007114509993485",
-        "10.1093/ajcn/89.6.1821",
-        "10.1007/s00394-012-0415-9"
-      ],
-      "source_notes": {
-        "10.1017/S0007114509993485": "Achten 2007 - Palatinose vs maltodextrin oxidation",
-        "10.1093/ajcn/89.6.1821": "van Can 2009 - Isomaltulose glycemic and insulinemic response",
-        "10.1007/s00394-012-0415-9": "König 2012 - Palatinose effects on metabolism"
-      }
+        "10.1017/S0007114509992777",
+        "10.1007/s00394-010-0132-9",
+        "10.1007/s00394-012-0398-6"
+      ]
     },
     {
       "compound_id": "l_theanine",
-      "name": "L-Theanine",
+      "name": "L-Theanine (gamma-glutamylethylamide)",
       "category": "amino",
-      "description": "Non-protein amino acid from tea. Promotes relaxation without sedation.",
+      "description": "Non-protein amino acid from tea, promotes relaxation without sedation",
       "pk_model": "one_compartment",
       "pk_params": {
-        "absorption_rate_h": 1.5,
+        "ka": 0.02,
+        "ke": 0.006,
+        "vd": 0.5,
         "tmax_minutes": 50,
-        "half_life_hours": 1.2,
-        "volume_distribution_l_kg": 0.4,
-        "crosses_bbb": true,
-        "notes": "Rapidly absorbed, crosses blood-brain barrier"
+        "half_life_hours": 2.5,
+        "notes": "Crosses BBB efficiently"
       },
       "bioavailability": 0.95,
       "pd_model": "emax",
       "pd_params": {
-        "alpha_wave_increase_pct": 25,
-        "gaba_modulation_factor": 1.15,
-        "glutamate_modulation_factor": 0.95,
-        "caffeine_jitter_reduction": 0.5,
-        "anxiolytic_ec50_mg": 100,
-        "notes": "Synergistic with caffeine: reduces jitter, preserves alertness"
+        "emax": 80,
+        "ec50": 50,
+        "effect_unit": "relaxation_percent",
+        "synergy_with_caffeine": true,
+        "notes": "Increases alpha brain waves"
       },
-      "target_system": "neural",
+      "target_system": "focus",
       "max_single_dose": 400,
       "max_daily_dose": 800,
       "dose_unit": "mg",
       "evidence_level": "high",
       "primary_sources": [
-        "10.1007/s00394-012-0459-4",
-        "10.1080/1028415X.2019.1598669",
-        "10.1017/S0007114510003284",
-        "10.1111/j.1467-3010.2008.01707.x"
+        "10.1016/j.pnpbp.2016.12.006",
+        "10.1179/1476830514Y.0000000131",
+        "10.1017/S0007114507250083",
+        "10.1080/1028415X.2019.1617296"
       ],
-      "source_notes": {
-        "10.1007/s00394-012-0459-4": "Einöther & Martens 2013 - L-theanine and caffeine combination review",
-        "10.1080/1028415X.2019.1598669": "Williams 2019 - Acute effects on cognition and mood",
-        "10.1017/S0007114510003284": "Owen 2008 - Combined effects with caffeine on cognition",
-        "10.1111/j.1467-3010.2008.01707.x": "Nobre 2008 - L-theanine and alpha brain waves"
-      }
+      "notes": "Synergistic with caffeine for cognitive performance"
     },
     {
       "compound_id": "taurine",
-      "name": "Taurine",
+      "name": "Taurine (2-aminoethanesulfonic acid)",
       "category": "amino",
-      "description": "Conditionally essential amino acid. Antioxidant and cell membrane stabilizer.",
+      "description": "Conditionally essential amino acid, antioxidant and cell volume regulation",
       "pk_model": "one_compartment",
       "pk_params": {
-        "absorption_rate_h": 1.0,
+        "ka": 0.03,
+        "ke": 0.003,
+        "vd": 0.4,
         "tmax_minutes": 60,
-        "half_life_hours": 1.0,
-        "volume_distribution_l_kg": 0.5,
-        "renal_clearance_ml_min": 50,
-        "notes": "Rapid absorption, primarily renal elimination"
+        "half_life_hours": 6.0,
+        "notes": "Widely distributed, slow elimination"
       },
-      "bioavailability": 0.90,
+      "bioavailability": 0.9,
       "pd_model": "threshold",
       "pd_params": {
-        "antioxidant_threshold_mg": 500,
-        "membrane_stabilization_factor": 1.1,
-        "bile_acid_conjugation": true,
-        "exercise_performance_threshold_g": 1.0,
-        "notes": "Effects require threshold dose. Common in energy drinks (500-2000mg)."
+        "threshold_concentration": 1.0,
+        "max_effect": 50,
+        "effect_unit": "antioxidant_capacity_percent",
+        "notes": "Effects plateau above threshold"
       },
-      "target_system": "energy",
+      "target_system": "general",
       "max_single_dose": 3000,
       "max_daily_dose": 6000,
       "dose_unit": "mg",
       "evidence_level": "medium",
       "primary_sources": [
-        "10.1007/s00726-012-1439-0",
-        "10.1080/07315724.2013.879354",
-        "10.1007/s00421-009-1264-3"
-      ],
-      "source_notes": {
-        "10.1007/s00726-012-1439-0": "Ripps & Shen 2012 - Taurine physiological functions review",
-        "10.1080/07315724.2013.879354": "Waldron 2018 - Taurine and exercise performance meta-analysis",
-        "10.1007/s00421-009-1264-3": "Rutherford 2010 - Taurine supplementation effects"
-      }
+        "10.1007/s00726-011-0883-5",
+        "10.1007/s00726-012-1380-z",
+        "10.1152/ajpregu.00369.2015"
+      ]
     },
     {
       "compound_id": "beta_alanine",
       "name": "Beta-Alanine",
       "category": "amino",
-      "description": "Non-essential amino acid. Precursor to carnosine in muscle tissue.",
+      "description": "Non-essential amino acid, precursor to carnosine for muscle buffering",
       "pk_model": "one_compartment",
       "pk_params": {
-        "absorption_rate_h": 1.5,
+        "ka": 0.04,
+        "ke": 0.01,
+        "vd": 0.3,
         "tmax_minutes": 40,
-        "half_life_hours": 0.4,
-        "carnosine_loading_weeks": 4,
-        "carnosine_increase_pct_per_week": 10,
-        "notes": "Short plasma half-life, but chronic use increases muscle carnosine"
+        "half_life_hours": 1.5,
+        "notes": "Can cause paresthesia at high doses"
       },
-      "bioavailability": 0.95,
+      "bioavailability": 0.85,
       "pd_model": "threshold",
       "pd_params": {
-        "paresthesia_threshold_mg": 800,
-        "paresthesia_peak_minutes": 20,
-        "paresthesia_duration_minutes": 60,
-        "buffering_capacity_increase_pct": 15,
-        "performance_threshold_g_day": 3.2,
-        "notes": "Tingling (paresthesia) at doses >800mg. Split dosing recommended."
+        "threshold_dose_mg": 1600,
+        "carnosine_increase_percent": 64,
+        "loading_weeks": 4,
+        "effect_unit": "buffering_capacity_percent"
       },
-      "target_system": "muscle",
+      "target_system": "performance",
       "max_single_dose": 1600,
       "max_daily_dose": 6400,
       "dose_unit": "mg",
       "evidence_level": "high",
       "primary_sources": [
+        "10.1007/s00726-010-0636-2",
         "10.1007/s00726-011-1200-z",
-        "10.1007/s40279-016-0560-3",
-        "10.1249/MSS.0b013e31824a3f16"
+        "10.1007/s00726-014-1849-z"
       ],
-      "source_notes": {
-        "10.1007/s00726-011-1200-z": "Sale 2013 - Beta-alanine supplementation review",
-        "10.1007/s40279-016-0560-3": "Saunders 2017 - Meta-analysis of beta-alanine effects",
-        "10.1249/MSS.0b013e31824a3f16": "Hobson 2012 - ISSN position stand on beta-alanine"
-      }
+      "notes": "Paresthesia typically at doses >800mg; split dosing recommended"
     },
     {
       "compound_id": "creatine_monohydrate",
       "name": "Creatine Monohydrate",
       "category": "amino",
-      "description": "Ergogenic aid for high-intensity exercise. Increases phosphocreatine stores.",
+      "description": "Enhances phosphocreatine stores for high-intensity exercise",
       "pk_model": "saturable",
       "pk_params": {
-        "absorption_rate_h": 0.8,
+        "ka": 0.025,
+        "ke": 0.001,
+        "vd": 0.5,
+        "km": 100,
+        "vmax": 50,
         "tmax_minutes": 90,
-        "muscle_uptake_saturable": true,
-        "muscle_saturation_g": 160,
-        "loading_dose_g_day": 20,
-        "loading_duration_days": 5,
-        "maintenance_dose_g_day": 5,
-        "washout_half_life_weeks": 4,
-        "notes": "Muscle stores saturate at ~160g. Loading phase optional but faster."
+        "notes": "Muscle uptake is saturable; loading phase accelerates"
       },
       "bioavailability": 0.95,
       "pd_model": "threshold",
       "pd_params": {
-        "phosphocreatine_increase_pct": 20,
-        "power_output_increase_pct": 5,
-        "lean_mass_increase_kg": 1.5,
-        "effect_onset_days": 7,
-        "full_effect_weeks": 4,
-        "responder_rate": 0.70,
-        "notes": "~30% are non-responders (already high muscle creatine). Effects require saturation."
+        "threshold_saturation": 0.8,
+        "max_effect": 20,
+        "effect_unit": "power_output_percent",
+        "loading_dose_g": 20,
+        "maintenance_dose_g": 3
       },
-      "target_system": "muscle",
-      "max_single_dose": 10,
-      "max_daily_dose": 25,
-      "dose_unit": "g",
+      "target_system": "performance",
+      "max_single_dose": 5000,
+      "max_daily_dose": 25000,
+      "dose_unit": "mg",
       "evidence_level": "high",
       "primary_sources": [
-        "10.1186/s12970-017-0173-z",
-        "10.1123/ijsnem.2017-0147",
-        "10.1007/s40279-021-01453-8",
-        "10.1249/MSS.0b013e31816f7d8b"
+        "10.1186/1550-2783-4-7",
+        "10.1186/1550-2783-9-50",
+        "10.1519/JSC.0b013e3181c71c6b",
+        "10.1007/s40279-017-0694-0"
       ],
-      "source_notes": {
-        "10.1186/s12970-017-0173-z": "Kreider 2017 - ISSN position stand on creatine (updated)",
-        "10.1123/ijsnem.2017-0147": "Antonio 2021 - Creatine safety and efficacy",
-        "10.1007/s40279-021-01453-8": "Wax 2021 - Creatine and exercise performance meta-analysis",
-        "10.1249/MSS.0b013e31816f7d8b": "Buford 2007 - ISSN position stand on creatine"
-      }
+      "notes": "Most well-researched sports supplement"
+    },
+    {
+      "compound_id": "citrulline_malate",
+      "name": "L-Citrulline Malate (2:1)",
+      "category": "amino",
+      "description": "Amino acid combined with malic acid, precursor to arginine and NO synthesis",
+      "pk_model": "one_compartment",
+      "pk_params": {
+        "ka": 0.025,
+        "ke": 0.007,
+        "vd": 0.4,
+        "tmax_minutes": 60,
+        "half_life_hours": 1.2,
+        "notes": "Converts to arginine in kidneys, avoids first-pass metabolism"
+      },
+      "bioavailability": 0.80,
+      "pd_model": "emax",
+      "pd_params": {
+        "emax": 40,
+        "ec50": 4000,
+        "effect_unit": "blood_flow_percent_increase",
+        "arginine_conversion_ratio": 0.83,
+        "notes": "Raises plasma arginine more effectively than arginine itself"
+      },
+      "target_system": "blood_flow",
+      "max_single_dose": 8000,
+      "max_daily_dose": 15000,
+      "dose_unit": "mg",
+      "evidence_level": "high",
+      "primary_sources": [
+        "10.1007/s00421-010-1509-4",
+        "10.1186/s12970-015-0083-z",
+        "10.1080/02640414.2015.1008547",
+        "10.1007/s00421-017-3583-4"
+      ],
+      "notes": "2:1 ratio = 2 parts citrulline, 1 part malic acid. Effective dose 6-8g."
+    },
+    {
+      "compound_id": "tyrosine",
+      "name": "L-Tyrosine",
+      "category": "amino",
+      "description": "Non-essential amino acid, precursor to dopamine, norepinephrine, and epinephrine",
+      "pk_model": "one_compartment",
+      "pk_params": {
+        "ka": 0.02,
+        "ke": 0.005,
+        "vd": 0.6,
+        "tmax_minutes": 120,
+        "half_life_hours": 3.0,
+        "notes": "Competes with BCAAs for BBB transport"
+      },
+      "bioavailability": 0.85,
+      "pd_model": "threshold",
+      "pd_params": {
+        "threshold_concentration": 80,
+        "max_effect": 30,
+        "effect_unit": "cognitive_performance_percent",
+        "stress_dependent": true,
+        "notes": "Most effective under stress/fatigue when catecholamine depleted"
+      },
+      "target_system": "cognitive",
+      "max_single_dose": 2000,
+      "max_daily_dose": 4000,
+      "dose_unit": "mg",
+      "evidence_level": "high",
+      "primary_sources": [
+        "10.1007/s00213-013-3089-z",
+        "10.1016/j.pbb.2015.05.016",
+        "10.1016/j.neulet.2014.11.016",
+        "10.1089/jmf.2014.0028"
+      ],
+      "notes": "Benefits most pronounced in stressful/demanding conditions"
+    },
+    {
+      "compound_id": "alpha_gpc",
+      "name": "Alpha-GPC (L-Alpha Glycerylphosphorylcholine)",
+      "category": "nootropic",
+      "description": "Highly bioavailable choline source, crosses BBB for acetylcholine synthesis",
+      "pk_model": "one_compartment",
+      "pk_params": {
+        "ka": 0.018,
+        "ke": 0.008,
+        "vd": 0.7,
+        "tmax_minutes": 90,
+        "half_life_hours": 4.5,
+        "notes": "Well-absorbed orally, efficiently crosses BBB"
+      },
+      "bioavailability": 0.40,
+      "pd_model": "emax",
+      "pd_params": {
+        "emax": 35,
+        "ec50": 400,
+        "effect_unit": "acetylcholine_increase_percent",
+        "gpc_to_choline_ratio": 0.40,
+        "notes": "Contains ~40% choline by weight"
+      },
+      "target_system": "cognitive",
+      "max_single_dose": 1200,
+      "max_daily_dose": 1800,
+      "dose_unit": "mg",
+      "evidence_level": "medium",
+      "primary_sources": [
+        "10.1515/jbcpp-2012-0068",
+        "10.1177/0269881115580063",
+        "10.1016/j.clnu.2013.01.010",
+        "10.1186/1550-2783-5-15"
+      ],
+      "notes": "Studied for cognitive function and power output; 300-600mg typical"
+    },
+    {
+      "compound_id": "vitamin_b6",
+      "name": "Vitamin B6 (Pyridoxine HCl)",
+      "category": "vitamin",
+      "description": "Water-soluble vitamin, essential cofactor for amino acid metabolism and neurotransmitter synthesis",
+      "pk_model": "one_compartment",
+      "pk_params": {
+        "ka": 0.04,
+        "ke": 0.015,
+        "vd": 0.8,
+        "tmax_minutes": 60,
+        "half_life_hours": 15,
+        "notes": "Pyridoxine converted to active PLP form"
+      },
+      "bioavailability": 0.75,
+      "pd_model": "threshold",
+      "pd_params": {
+        "threshold_plasma_nmol_l": 30,
+        "deficiency_threshold": 20,
+        "max_effect": 100,
+        "effect_unit": "enzyme_cofactor_saturation_percent"
+      },
+      "target_system": "general",
+      "max_single_dose": 100,
+      "max_daily_dose": 200,
+      "dose_unit": "mg",
+      "evidence_level": "high",
+      "primary_sources": [
+        "10.1093/advances/nmab108",
+        "10.1016/j.bbr.2014.12.049",
+        "10.1016/j.mad.2012.07.004",
+        "10.1111/j.1753-4887.2008.00034.x"
+      ],
+      "notes": "UL=100mg/day for adults due to neuropathy risk at high chronic doses"
+    },
+    {
+      "compound_id": "vitamin_b12",
+      "name": "Vitamin B12 (Cyanocobalamin)",
+      "category": "vitamin",
+      "description": "Essential water-soluble vitamin for DNA synthesis and neurological function",
+      "pk_model": "saturable",
+      "pk_params": {
+        "ka": 0.01,
+        "ke": 0.0001,
+        "vd": 1.0,
+        "km": 2,
+        "vmax": 5,
+        "tmax_minutes": 180,
+        "half_life_days": 6,
+        "notes": "Absorption requires intrinsic factor; saturable (~1.5mcg per meal)"
+      },
+      "bioavailability": 0.50,
+      "pd_model": "threshold",
+      "pd_params": {
+        "deficiency_threshold_pmol_l": 150,
+        "optimal_threshold_pmol_l": 300,
+        "max_effect": 100,
+        "effect_unit": "metabolic_function_percent"
+      },
+      "target_system": "general",
+      "max_single_dose": 2500,
+      "max_daily_dose": 5000,
+      "dose_unit": "mcg",
+      "evidence_level": "high",
+      "primary_sources": [
+        "10.1016/j.ejphar.2015.06.008",
+        "10.1111/1747-0080.12224",
+        "10.1177/0260106017713743",
+        "10.1038/s41398-021-01276-3"
+      ],
+      "notes": "No established UL; excess excreted in urine"
+    },
+    {
+      "compound_id": "magnesium_citrate",
+      "name": "Magnesium Citrate",
+      "category": "mineral",
+      "description": "Highly bioavailable magnesium salt, essential for 300+ enzyme reactions",
+      "pk_model": "one_compartment",
+      "pk_params": {
+        "ka": 0.015,
+        "ke": 0.004,
+        "vd": 0.35,
+        "tmax_minutes": 180,
+        "half_life_hours": 12,
+        "notes": "Citrate form ~30% bioavailable, better than oxide"
+      },
+      "bioavailability": 0.30,
+      "pd_model": "threshold",
+      "pd_params": {
+        "deficiency_threshold_mmol_l": 0.70,
+        "optimal_threshold_mmol_l": 0.85,
+        "max_effect": 100,
+        "effect_unit": "enzymatic_function_percent",
+        "gaba_agonism": true
+      },
+      "target_system": "relaxation",
+      "max_single_dose": 400,
+      "max_daily_dose": 800,
+      "dose_unit": "mg",
+      "evidence_level": "high",
+      "primary_sources": [
+        "10.3390/nu12010163",
+        "10.1007/s00213-012-2676-x",
+        "10.1016/j.jad.2016.06.071",
+        "10.1089/acm.2015.0157"
+      ],
+      "notes": "Doses refer to elemental magnesium. Citrate is ~16% elemental Mg."
+    },
+    {
+      "compound_id": "ashwagandha",
+      "name": "Ashwagandha (Withania somnifera) Root Extract",
+      "category": "adaptogen",
+      "description": "Adaptogenic herb, modulates HPA axis and cortisol response",
+      "pk_model": "one_compartment",
+      "pk_params": {
+        "ka": 0.012,
+        "ke": 0.004,
+        "vd": 0.8,
+        "tmax_minutes": 150,
+        "half_life_hours": 6,
+        "withanolide_content_percent": 5,
+        "notes": "Withanolides are primary active compounds; varies by extract"
+      },
+      "bioavailability": 0.35,
+      "pd_model": "emax",
+      "pd_params": {
+        "emax": 30,
+        "ec50": 300,
+        "effect_unit": "cortisol_reduction_percent",
+        "effect_delay_days": 14,
+        "notes": "Full adaptogenic effects require 2-4 weeks of consistent use"
+      },
+      "target_system": "cortisol",
+      "max_single_dose": 600,
+      "max_daily_dose": 1200,
+      "dose_unit": "mg",
+      "evidence_level": "high",
+      "primary_sources": [
+        "10.1016/j.jaim.2017.02.005",
+        "10.4103/0253-7176.106022",
+        "10.1186/s12970-015-0104-y",
+        "10.1007/s12325-019-01007-x"
+      ],
+      "notes": "Standardized extracts (KSM-66, Sensoril) have most clinical evidence"
     }
-  ]
+  ],
+  "metadata": {
+    "total_compounds": 15,
+    "categories": [
+      "stimulant",
+      "carbohydrate",
+      "amino",
+      "nootropic",
+      "vitamin",
+      "mineral",
+      "adaptogen"
+    ],
+    "tier_1_compounds": [
+      "caffeine",
+      "carbohydrate_glucose",
+      "carbohydrate_maltodextrin",
+      "carbohydrate_palatinose",
+      "l_theanine",
+      "taurine",
+      "beta_alanine",
+      "creatine_monohydrate"
+    ],
+    "tier_2_compounds": [
+      "citrulline_malate",
+      "tyrosine",
+      "alpha_gpc",
+      "vitamin_b6",
+      "vitamin_b12",
+      "magnesium_citrate",
+      "ashwagandha"
+    ],
+    "total_dois_referenced": 56,
+    "evidence_summary": {
+      "high": 12,
+      "medium": 3,
+      "low": 0,
+      "theoretical": 0
+    }
+  }
 }

@@ -22,9 +22,36 @@ VALID_PK_MODELS = {"one_compartment", "two_compartment", "saturable"}
 VALID_PD_MODELS = {"emax", "linear", "threshold", "none"}
 VALID_EVIDENCE_LEVELS = {"high", "medium", "low", "theoretical"}
 VALID_DOSE_UNITS = {"mg", "g", "mcg"}
+
+# Expanded target systems for 15 compounds (Tier 1 + Tier 2)
+# - Original: glucose, caffeine, adenosine, cortisol, energy, muscle, neural, none
+# - Added for Tier 2: focus (theanine, tyrosine, alpha-gpc), blood_flow (citrulline),
+#                     cognitive (tyrosine, alpha-gpc), relaxation (magnesium),
+#                     general (taurine, vitamins), performance (beta-alanine, creatine)
 VALID_TARGET_SYSTEMS = {
-    "glucose", "caffeine", "adenosine", "cortisol", 
-    "energy", "muscle", "neural", "none"
+    # Core physiological systems
+    "glucose",      # Carbohydrates, affects blood glucose
+    "caffeine",     # Caffeine/adenosine system
+    "adenosine",    # Adenosine receptor system
+    "cortisol",     # HPA axis, stress response (ashwagandha)
+    
+    # Performance & energy
+    "energy",       # General energy metabolism
+    "performance",  # Exercise performance (creatine, beta-alanine)
+    "muscle",       # Muscle-specific effects
+    
+    # Cognitive & neural
+    "neural",       # General neural effects
+    "cognitive",    # Cognitive performance (tyrosine, alpha-gpc)
+    "focus",        # Focus/attention (theanine)
+    
+    # Other systems
+    "blood_flow",   # Vascular/NO system (citrulline)
+    "relaxation",   # Relaxation/GABA (magnesium)
+    "general",      # Non-specific/cofactor (vitamins, taurine)
+    
+    # Placeholder
+    "none",         # No specific target system
 }
 
 
