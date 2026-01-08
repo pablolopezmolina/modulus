@@ -14,12 +14,12 @@
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
 FASE 2 (Pack 1 - €50k):     ████████████████████  100% ✅ COMPLETADO
-FASE 3 (Pack 2 - €250k):    ████░░░░░░░░░░░░░░░░   25% 🔨 EN PROGRESO
+FASE 3 (Pack 2 - €250k):    ████████░░░░░░░░░░░░   40% 🔨 EN PROGRESO
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 3 - Sesión 8.1 completada
-PRÓXIMA SESIÓN:             8.2 - Interaction Framework
+TOTAL PROGRESO:             FASE 3 - Semana 8 completada
+PRÓXIMA SESIÓN:             9.1 - Evidence Registry
 ```
 
 ---
@@ -39,47 +39,52 @@ El producto mínimo vendible está completo:
 
 ## 🔨 PACK 2 (€150-250k) - EN PROGRESO
 
-### Sesión 8.1: Ingredientes Tier 2 ✅ COMPLETADA
+### Semana 8: Ingredients + Interactions ✅ COMPLETADA
+
+#### Sesión 8.1: Ingredientes Tier 2 ✅
 ```
 [x] data/reference/ingredients.json (15 compuestos totales)
 [x] src/core/compounds/profile.py (VALID_TARGET_SYSTEMS expandidos)
 [x] tests/unit/test_ingredients_tier2.py (49 tests)
-[x] tests/unit/test_ingredients_library.py (arreglado valid_systems)
+```
+
+#### Sesión 8.2: Interaction Framework ✅
+```
+[x] src/core/interactions/__init__.py
+[x] src/core/interactions/interaction.py (Contract 3.3)
+[x] src/core/interactions/graph.py (Contract 4.1)
+[x] data/reference/interactions.json (12 compound interactions + 4 context rules)
+[x] tests/unit/test_interactions.py (31 tests)
 ```
 
 **Completado:** 2025-01-08
-**Tests:** 774 tests (763 unit + 11 integration)
+**Tests totales:** 805 (794 unit + 11 integration)
 
-**Compuestos Tier 2 añadidos (7 nuevos):**
+**Compound-Compound Interactions (12):**
 
-| Compuesto | Categoría | Target System | PK Model | Evidence | DOIs |
-|-----------|-----------|---------------|----------|----------|------|
-| citrulline_malate | amino | blood_flow | one_compartment | high | 4 |
-| tyrosine | amino | cognitive | one_compartment | high | 4 |
-| alpha_gpc | nootropic | cognitive | one_compartment | medium | 4 |
-| vitamin_b6 | vitamin | general | one_compartment | high | 4 |
-| vitamin_b12 | vitamin | general | saturable | high | 4 |
-| magnesium_citrate | mineral | relaxation | one_compartment | high | 4 |
-| ashwagandha | adaptogen | cortisol | one_compartment | high | 4 |
+| Interaction | Type | Target Param | Effect | Evidence |
+|-------------|------|--------------|--------|----------|
+| caffeine + l_theanine | synergy | jitter_risk | ×0.5 | high |
+| caffeine + l_theanine | synergy | focus_enhancement | ×1.25 | high |
+| caffeine + food | absorption | tmax_minutes | +30 | high |
+| glucose + protein | absorption | gastric_emptying | ×0.85 | high |
+| glucose + fat | absorption | gastric_emptying | ×0.80 | high |
+| glucose + fiber | absorption | glucose_peak | ×0.85 | high |
+| glucose + creatine | absorption | creatine_uptake | ×1.25 | high |
+| caffeine + tyrosine | synergy | focus_enhancement | ×1.30 | medium |
+| caffeine + beta_alanine | synergy | exercise_performance | ×1.15 | medium |
+| caffeine + alpha_gpc | synergy | power_output | ×1.10 | medium |
+| l_theanine + tyrosine | synergy | calm_focus | ×1.20 | medium |
+| magnesium + vitamin_b6 | synergy | stress_reduction | ×1.25 | high |
 
-**Target Systems expandidos (6 nuevos):**
-- `focus` (theanine)
-- `cognitive` (tyrosine, alpha-gpc)
-- `blood_flow` (citrulline)
-- `relaxation` (magnesium)
-- `general` (vitamins, taurine)
-- `performance` (creatine, beta-alanine)
+**Context Rules (4):**
 
-**Total DOIs:** 56 referencias científicas (27 Tier 1 + 29 Tier 2)
-
-### Sesión 8.2: Interaction Framework ❌ PENDIENTE
-```
-[ ] src/core/interactions/__init__.py
-[ ] src/core/interactions/interaction.py
-[ ] src/core/interactions/graph.py
-[ ] data/reference/interactions.json (10 interacciones)
-[ ] tests/unit/test_interactions.py
-```
+| Rule | Condition | Target Param | Effect | Evidence |
+|------|-----------|--------------|--------|----------|
+| High caffeine | >300mg | jitter_risk | ×1.50 | high |
+| Afternoon caffeine | after 14:00 | sleep_disruption_risk | ×2.0 | high |
+| Very high caffeine | >400mg | anxiety_risk | ×1.75 | high |
+| Excessive daily | >600mg/day | tolerance_development | =0.8 | medium |
 
 ### Semana 9: Evidence System ❌ PENDIENTE
 ```
@@ -104,8 +109,6 @@ El producto mínimo vendible está completo:
 
 ## CÓDIGO HEREDADO DE V1 (REUTILIZABLE)
 
-Estos módulos fueron construidos en la versión anterior y están **100% funcionales**.
-
 ### ✅ Modelos Fisiológicos (Capa 1 - Foundation)
 
 | Módulo | Archivo | Estado | Notas |
@@ -128,59 +131,8 @@ Estos módulos fueron construidos en la versión anterior y están **100% funcio
 |---------|--------|-------|
 | `data/reference/population_params.json` | ✅ Completo | 242 líneas, NHANES |
 | `data/reference/glycemic_index.csv` | ✅ Existe | Índices glicémicos |
-| `data/reference/ingredients.json` | ✅ Completo | **15 compuestos** (Sesión 8.1) |
-
----
-
-## FASE 0: ANTI-FRANKENSTEIN ✅ COMPLETADA
-
-### Sesión 0.1: Contratos Ejecutables ✅
-### Sesión 0.2: CI Local + Dependency Rules ✅
-### Sesión 0.3: Golden Scenarios Base ✅
-
----
-
-## FASE 1: 24H ENGINE ✅ COMPLETADA
-
-### Sesiones 1.1 - 3.3 ✅
-- Timeline + Events
-- PhysiologicalState
-- StateIntegrator (step + simulate_timeline)
-- DaySimulator
-- Métricas Básicas
-- PDF Generator v0
-
----
-
-## FASE 2: PACK 1 (€50k) ✅ COMPLETADA
-
-### Sesiones 4.1 - 7.1 ✅
-- CompoundProfile + IngredientLibrary (8 Tier 1)
-- Formulation System
-- PopulationDaySimulator
-- Basic Risk Map (3 segmentos)
-- DecisionEngine (GO/CAUTION/NO_GO)
-- ClaimAnalyzer (4 claims)
-- PDF v1 (15+ páginas)
-
----
-
-## FASE 3: PACK 2 (€250k) - EN PROGRESO
-
-### Sesión 8.1: Ingredientes Tier 2 ✅ COMPLETADA
-
-**Archivos modificados/creados:**
-- `data/reference/ingredients.json` - 15 compuestos (8+7)
-- `src/core/compounds/profile.py` - VALID_TARGET_SYSTEMS expandidos
-- `tests/unit/test_ingredients_tier2.py` - 49 tests nuevos
-- `tests/unit/test_ingredients_library.py` - Arreglado para nuevos target_systems
-
-**Verificado:**
-- 15 compuestos totales con evidencia completa ✅
-- 56 DOIs reales de literatura científica ✅
-- 14 target_systems válidos ✅
-- Todos los compuestos pasan validación CompoundProfile ✅
-- `make check` pasa: 774 tests ✅
+| `data/reference/ingredients.json` | ✅ Completo | **15 compuestos, 56 DOIs** |
+| `data/reference/interactions.json` | ✅ Completo | **12 interacciones + 4 context rules** |
 
 ---
 
@@ -188,11 +140,11 @@ Estos módulos fueron construidos en la versión anterior y están **100% funcio
 
 | Suite | Tests | Estado |
 |-------|-------|--------|
-| `tests/unit/` | 763 | ✅ |
+| `tests/unit/` | 794 | ✅ |
 | `tests/integration/` | 11 | ✅ |
-| **TOTAL** | **774** | ✅ |
+| **TOTAL** | **805** | ✅ |
 
-**`make check`: 774 tests en ~22s**
+**`make check`: 805 tests en ~22s**
 
 ---
 
@@ -217,8 +169,8 @@ modulus/
 │   └── reference/
 │       ├── population_params.json  ✅
 │       ├── glycemic_index.csv      ✅
-│       ├── ingredients.json        ✅ (15 compuestos - Sesión 8.1)
-│       └── interactions.json       ❌ (Sesión 8.2)
+│       ├── ingredients.json        ✅ (15 compuestos)
+│       └── interactions.json       ✅ (12 interacciones + 4 context rules)
 │
 ├── src/
 │   ├── core/
@@ -227,23 +179,22 @@ modulus/
 │   │   ├── state/           ✅ (Fase 1)
 │   │   ├── simulation/      ✅ (Fase 1 + Fase 2)
 │   │   ├── compounds/       ✅ (Fase 2 + Sesión 8.1)
-│   │   │   ├── __init__.py  ✅
-│   │   │   ├── profile.py   ✅ (target_systems expandidos)
-│   │   │   ├── library.py   ✅
-│   │   │   └── formulation.py ✅
 │   │   ├── models/          ✅ (heredado v1)
 │   │   ├── population/      ✅ (heredado v1)
-│   │   └── interactions/    ❌ (Sesión 8.2)
+│   │   └── interactions/    ✅ (Sesión 8.2)
+│   │       ├── __init__.py  ✅
+│   │       ├── interaction.py ✅ (Contract 3.3)
+│   │       └── graph.py     ✅ (Contract 4.1)
 │   ├── analysis/            ✅ (Fase 2)
 │   ├── reporting/           ✅ (Fase 2)
 │   └── api/                 ✅ (heredado v1)
 │
 ├── tests/
-│   ├── unit/                ✅ 763 tests
-│   │   ├── test_ingredients_tier2.py ✅ (49 tests - Sesión 8.1)
+│   ├── unit/                ✅ 794 tests
+│   │   ├── test_interactions.py ✅ (31 tests)
 │   │   └── ...
 │   ├── integration/         ✅ 11 tests
-│   └── golden/              ✅ (no en make check)
+│   └── golden/              ✅
 │
 ├── Makefile                 ✅
 ├── pyproject.toml           ✅
@@ -255,34 +206,24 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 3, Sesión 8.2: Interaction Framework**
+**FASE 3, Sesión 9.1: Evidence Registry**
 
 ```
-OBJETIVO: Modelar interacciones entre compuestos para Pack 2
+OBJETIVO: Sistema de trazabilidad de evidencia para Pack 2
 
 ARCHIVOS A CREAR:
-- src/core/interactions/__init__.py
-- src/core/interactions/interaction.py
-- src/core/interactions/graph.py
-- data/reference/interactions.json
-- tests/unit/test_interactions.py
+- src/analysis/evidence.py
 
-10 INTERACCIONES CLAVE:
-1. caffeine + l_theanine → reduced_jitter (-50%)
-2. caffeine + food → delayed_absorption (+30min Tmax)
-3. carbs + protein → slower_absorption
-4. carbs + fat → slower_absorption
-5. carbs + fiber → reduced_peak (-15%)
-6. creatine + carbs → enhanced_uptake
-7. caffeine_high (>300mg) → increased_jitter
-8. caffeine_afternoon (>14:00) → sleep_disruption
-9. caffeine + caffeine (multiple) → additive
-10. tyrosine + caffeine → enhanced_focus
+FUNCIONALIDADES:
+- EvidenceRegistry: Base de datos de fuentes científicas
+- Cada parámetro → source (DOI/DB) + confidence + notes
+- generate_evidence_table() → para PDF
+- export_citations() → BibTeX o lista
 
 CRITERIOS DE ÉXITO:
-- Contract 3.3 compliance (Interaction dataclass)
-- Contract 4.1 compliance (InteractionGraph)
-- 10 interacciones con evidencia
+- Todos los parámetros de ingredientes trazables
+- Export a formato citeable
+- Integración con PDF v2
 - `make check` pasa
 ```
 
@@ -299,4 +240,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | 5.1-5.2 | Population Simulation + Risk Map |
 | 2025-01-07 | 6.1-6.2 | Decision Engine + Claims |
 | 2025-01-08 | 7.1 | PDF v1. FASE 2 COMPLETADA. Pack 1 listo. |
-| 2025-01-08 | 8.1 | **15 ingredientes Tier 1+2. 56 DOIs. 774 tests.** |
+| 2025-01-08 | 8.1 | 15 ingredientes Tier 1+2. 56 DOIs. |
+| 2025-01-08 | 8.2 | **Interaction Framework: 12 interacciones + 4 context rules. 805 tests.** |
