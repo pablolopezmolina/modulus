@@ -15,11 +15,11 @@ FASE 0 (Anti-Frankenstein): █████████████████�
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
 FASE 2 (Pack 1 - €50k):     ████████████████████  100% ✅ COMPLETADO
 FASE 3 (Pack 2 - €250k):    ████████████████████  100% ✅ COMPLETADO
-FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░    0%
+FASE 4 (Optimization):      ██████░░░░░░░░░░░░░░   50% 🔨 EN PROGRESO
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 3 COMPLETADA ✅
-PRÓXIMA SESIÓN:             14.1 - Recommendation Engine (FASE 4)
+TOTAL PROGRESO:             FASE 4 EN PROGRESO
+PRÓXIMA SESIÓN:             14.2 - Simple Optimizer
 ```
 
 ---
@@ -91,7 +91,7 @@ El producto mínimo vendible está completo:
 [x] tests/unit/test_certificate.py (36 tests)
 ```
 
-### Semana 11: PDF v2 + API ✅ COMPLETADA
+### Semana 11: PDF v2 + API ✅
 
 #### Sesión 11.1: PDF v2 Enterprise ✅
 ```
@@ -105,15 +105,39 @@ El producto mínimo vendible está completo:
 [x] tests/unit/test_api_pack2.py (65 tests)
 ```
 
-**Endpoints implementados:**
-1. GET /health - Health check
-2. GET /version - API version info
-3. GET /ingredients - List 15 available ingredients
-4. POST /simulate-formulation - Population simulation (N=10-100000)
-5. POST /compare - A/B formulation comparison
-6. GET /certificate/{id} - PDF/JSON certificate retrieval
-7. GET /evidence/{id} - Evidence bundle with DOIs
-8. GET /bundle/{id} - Reproducibility bundle
+---
+
+## 🔨 FASE 4 (Optimization) - EN PROGRESO
+
+### Sesión 14.1: Recommendation Engine ✅ COMPLETADA
+```
+[x] src/analysis/recommendations.py (450+ líneas)
+[x] tests/unit/test_recommendations.py (33 tests)
+```
+
+**Implementado:**
+- `RecommendationType` enum (5 tipos: ingredient_adjustment, timing_optimization, addition_suggestion, label_warning, removal_suggestion)
+- `Recommendation` dataclass (con expected_impact, confidence, evidence_summary)
+- `RecommendationReport` dataclass (con filtros por tipo/prioridad y serialización)
+- `RecommendationConfig` dataclass (thresholds configurables)
+- `RecommendationEngine` clase principal con método `analyze()`
+
+**Tipos de recomendaciones generadas:**
+1. ✅ Ingredient adjustment: "Reducir cafeína 300→200mg" (basado en jitter_risk)
+2. ✅ Timing optimization: "Tomar antes de las 14:00" (basado en sleep_risk)
+3. ✅ Addition suggestion: "Añadir L-Theanine 200mg" (sinergia cafeína)
+4. ✅ Label warning: "Not for caffeine-sensitive individuals"
+
+**Features:**
+- Priority scoring (1-5, donde 1 = más urgente)
+- Confidence levels (HIGH=0.90, MEDIUM=0.75, LOW=0.60)
+- Evidence summaries con referencias científicas
+- Expected impact calculations (Δ en métricas de riesgo)
+- Key issues identification automática
+- Overall improvement potential score (0-1)
+- Text formatting utility (`format_recommendations_text()`)
+- JSON serialization (`to_dict()`)
+- Convenience function (`generate_recommendations()`)
 
 ---
 
@@ -121,11 +145,11 @@ El producto mínimo vendible está completo:
 
 | Suite | Tests | Estado |
 |-------|-------|--------|
-| `tests/unit/` | 1085 | ✅ |
+| `tests/unit/` | 1118 | ✅ |
 | `tests/integration/` | 11 | ✅ |
-| **TOTAL** | **1096** | ✅ |
+| **TOTAL** | **1129** | ✅ |
 
-**`make check`: 1096 tests en ~31s**
+**`make check`: 1129 tests en ~28s**
 
 ---
 
@@ -159,18 +183,19 @@ modulus/
 │   │   ├── decision.py      ✅
 │   │   ├── claims.py        ✅
 │   │   ├── evidence.py      ✅
-│   │   └── comparison.py    ✅ (A/B Comparison)
+│   │   ├── comparison.py    ✅ (A/B Comparison)
+│   │   └── recommendations.py ✅ (NEW - Sesión 14.1)
 │   ├── reporting/
 │   │   ├── pdf_generator.py ✅ (v1)
 │   │   ├── pdf_generator_v2.py ✅ (40+ páginas)
 │   │   ├── bundle.py        ✅
 │   │   └── certificate.py   ✅
 │   └── api/
-│       └── main.py          ✅ (8 endpoints REST - NEW)
+│       └── main.py          ✅ (8 endpoints REST)
 │
 └── tests/
-    ├── unit/                ✅ 1085 tests
-    │   └── test_api_pack2.py  ✅ (65 tests - NEW)
+    ├── unit/                ✅ 1118 tests
+    │   └── test_recommendations.py ✅ (33 tests - NEW)
     └── integration/         ✅ 11 tests
 ```
 
@@ -178,24 +203,27 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 4, Sesión 14.1: Recommendation Engine**
+**FASE 4, Sesión 14.2: Simple Optimizer**
 
 ```
-OBJETIVO: Sistema de recomendaciones inteligentes
+OBJETIVO: Optimizador de fórmulas por grid search
 
 ARCHIVOS A CREAR:
-- src/analysis/recommendations.py
-- tests/unit/test_recommendations.py
+- src/analysis/optimizer.py
+- tests/unit/test_optimizer.py
 
-TIPOS DE RECOMENDACIONES:
-- Ingredient adjustment: "Reducir cafeína 200→150mg"
-- Timing optimization: "Mejor antes de las 16:00"
-- Addition suggestion: "Añadir L-Theanine 100mg"
-- Label warning: "Añadir warning para sensibles a cafeína"
+ESPECIFICACIÓN:
+- class FormulationOptimizer
+- optimize(base_formula, objective, constraints) → List[Formulation]
+- Objetivos: max_efficacy, min_risk, balanced
+- Constraints: max_caffeine, max_cost, must_include, must_exclude
+- Método: Grid search sobre variantes razonables
+- Output: Top 3 fórmulas + comparison
 
 CRITERIOS DE ÉXITO:
-- Recomendaciones basadas en resultados de simulación
-- Cada recomendación con expected_impact y confidence
+- Genera variantes de fórmulas automáticamente
+- Evalúa cada variante con simulación rápida
+- Retorna ranking con métricas comparativas
 - Tests pasan
 - `make check` pasa
 ```
@@ -210,6 +238,7 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | FASE 1 completada | 24h Engine funcional |
 | 2025-01-08 | FASE 2 completada | **Pack 1 vendible (€50k)** |
 | 2025-01-08 | FASE 3 completada | **Pack 2 vendible (€150-250k)** |
+| 2025-01-08 | Sesión 14.1 completada | Recommendation Engine |
 
 ---
 
@@ -232,4 +261,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-08 | 10.2 | A/B Comparison Engine. 972 tests. |
 | 2025-01-08 | 10.3 | Certificate Generator. 1008 tests. |
 | 2025-01-08 | 11.1 | PDF v2 Enterprise (40+ páginas). 1031 tests. |
-| 2025-01-08 | 11.2 | **API Pack 2 (8 endpoints). 1096 tests. FASE 3 COMPLETADA.** |
+| 2025-01-08 | 11.2 | API Pack 2 (8 endpoints). 1096 tests. FASE 3 COMPLETADA. |
+| 2025-01-08 | 14.1 | **Recommendation Engine. 1129 tests. FASE 4 iniciada.** |
