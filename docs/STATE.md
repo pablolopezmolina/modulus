@@ -14,12 +14,12 @@
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
 FASE 2 (Pack 1 - €50k):     ████████████████████  100% ✅ COMPLETADO
-FASE 3 (Pack 2 - €250k):    ██████████████████░░   90% 🔨 EN PROGRESO
+FASE 3 (Pack 2 - €250k):    ███████████████████░   95% 🔨 EN PROGRESO
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 3 - Semana 10 completada
-PRÓXIMA SESIÓN:             11.1 - PDF v2 Enterprise (40+ páginas)
+TOTAL PROGRESO:             FASE 3 - Semana 11 en progreso
+PRÓXIMA SESIÓN:             11.2 - API Updates para Pack 2
 ```
 
 ---
@@ -79,52 +79,41 @@ El producto mínimo vendible está completo:
 [x] tests/unit/test_risk_full.py (63 tests nuevos)
 ```
 
-**Funcionalidades implementadas:**
-- ✅ 6 dimensiones de segmentación
-- ✅ 6 tipos de riesgo
-- ✅ RiskMatrix, RiskMatrixCell, SegmentClassifier
-- ✅ DangerZoneDetector, FullRiskMapAnalyzer
-- ✅ format_risk_map_for_pdf()
-
 #### Sesión 10.2: A/B Comparison Engine ✅
 ```
 [x] src/analysis/comparison.py (31KB)
 [x] tests/unit/test_comparison.py (46 tests)
 ```
 
-**Funcionalidades implementadas:**
-- ✅ ComparisonEngine con compare(), compare_multiple(), rank_products()
-- ✅ MetricComparison, RiskComparison, Comparison dataclasses
-- ✅ Statistical significance (Welch's t-test, Cohen's d)
-- ✅ Multi-product ranking
-
-#### Sesión 10.3: Certificate Generator ✅ COMPLETADA
+#### Sesión 10.3: Certificate Generator ✅
 ```
 [x] src/reporting/certificate.py (32KB)
 [x] tests/unit/test_certificate.py (36 tests)
 ```
 
-**Funcionalidades implementadas:**
-- ✅ CertificateGenerator: Clase principal con generate(), prepare()
-- ✅ CertificateInfo (frozen dataclass): Datos inmutables del certificado
-- ✅ CertificateResult: certificate_id, output_path, info, verification_url
-- ✅ CertificateConfig: company_name, include_qr_code, qr_base_url, page_size
-- ✅ generate_certificate_id(): IDs únicos formato MODULUS-YYYY-XXXXXX
-- ✅ PDF profesional 1 página con:
-  - Header corporativo MODULUS
-  - "MODULUS PROTOCOL VERIFICATION CERTIFICATE"
-  - Verdict con colores (GO=verde, CAUTION=ámbar, NO_GO=rojo)
-  - Tabla de métricas clave (4 métricas)
-  - Tabla de riesgos con status (Low/Moderate/High)
-  - Footer con ID, fecha, población, versión
-  - QR code placeholder para verificación
-- ✅ format_certificate_for_pdf(): Integración con PDF v2
-- ✅ Serialización to_dict(), to_json()
+### Semana 11: PDF v2 + API 🔨 EN PROGRESO
 
-### Semana 11: PDF v2 ❌ PENDIENTE
+#### Sesión 11.1: PDF v2 Enterprise ✅ COMPLETADA
 ```
-[ ] PDF v2 (40+ páginas)
-[ ] API updates
+[x] src/reporting/pdf_generator_v2.py (29KB)
+[x] tests/unit/test_pdf_generator_v2.py (23 tests)
+```
+
+**Funcionalidades implementadas:**
+- ✅ PDFv2Config: Configuración con validación, colores, secciones opcionales
+- ✅ PDFv2Result: Resultado con page_count, sections, danger_zones_count, doi_count
+- ✅ PDFGeneratorV2: Generador principal con 14 section builders
+- ✅ ChartGenerator: Gráficos matplotlib (curvas 24h, heatmaps, comparación)
+- ✅ Secciones: Cover, TOC, Executive Summary, Decision Page, Product Overview
+- ✅ Secciones: 24h Curves, Risk Analysis, Segment Analysis, Claims
+- ✅ Secciones: Recommendations, Comparison, Methodology, Evidence Appendix
+- ✅ Secciones: Reproducibility, Certificate, Appendix
+- ✅ Colores corporativos y verdict color-coding (GO=green, CAUTION=amber, NO_GO=red)
+- ✅ 40+ páginas con todas las secciones opcionales
+
+#### Sesión 11.2: API Updates ❌ PENDIENTE
+```
+[ ] src/api/main.py (nuevos endpoints)
 ```
 
 ---
@@ -133,11 +122,11 @@ El producto mínimo vendible está completo:
 
 | Suite | Tests | Estado |
 |-------|-------|--------|
-| `tests/unit/` | 997 | ✅ |
+| `tests/unit/` | 1020 | ✅ |
 | `tests/integration/` | 11 | ✅ |
-| **TOTAL** | **1008** | ✅ |
+| **TOTAL** | **1031** | ✅ |
 
-**`make check`: 1008 tests en ~22s**
+**`make check`: 1031 tests en ~29s**
 
 ---
 
@@ -173,14 +162,15 @@ modulus/
 │   │   ├── evidence.py      ✅
 │   │   └── comparison.py    ✅ (A/B Comparison)
 │   ├── reporting/
-│   │   ├── pdf_generator.py ✅
+│   │   ├── pdf_generator.py ✅ (v1)
+│   │   ├── pdf_generator_v2.py ✅ (NEW - 40+ páginas)
 │   │   ├── bundle.py        ✅
-│   │   └── certificate.py   ✅ (NEW - Session 10.3)
+│   │   └── certificate.py   ✅
 │   └── api/                 ✅
 │
 └── tests/
-    ├── unit/                ✅ 997 tests
-    │   └── test_certificate.py  ✅ (36 tests - NEW)
+    ├── unit/                ✅ 1020 tests
+    │   └── test_pdf_generator_v2.py  ✅ (23 tests - NEW)
     └── integration/         ✅ 11 tests
 ```
 
@@ -188,30 +178,24 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 3, Sesión 11.1: PDF v2 Enterprise**
+**FASE 3, Sesión 11.2: API Updates**
 
 ```
-OBJETIVO: PDF profesional de 40-50 páginas para Pack 2
+OBJETIVO: Nuevos endpoints para Pack 2
 
 ARCHIVOS A MODIFICAR:
-- src/reporting/pdf_generator.py
+- src/api/main.py
 
-FUNCIONALIDADES:
-- PDF v2 Enterprise (40-50 páginas):
-  - Todo de v1, más:
-  - Comparison section (si aplica)
-  - Full Risk Map visualization (6 segmentos)
-  - Evidence appendix (10+ páginas con DOIs)
-  - Reproducibility info
-  - Certificate page integrado
-  - Table of contents
-  - Diseño más profesional
+NUEVOS ENDPOINTS:
+- POST /simulate-formulation (Formulation → Result)
+- POST /compare (A vs B)
+- GET /certificate/{id}
+- GET /evidence/{id}
+- GET /bundle/{id}
 
 CRITERIOS DE ÉXITO:
-- PDF genera correctamente con todas las secciones
-- Table of contents funcional
-- Evidence appendix con referencias
-- Certificate integrado
+- Todos los endpoints funcionan
+- Tests de API pasan
 - `make check` pasa
 ```
 
@@ -234,4 +218,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-08 | 9.2 | Reproducibility Bundle. 871 tests. |
 | 2025-01-08 | 10.1 | Full Risk Map 6 segmentos. 926 tests. |
 | 2025-01-08 | 10.2 | A/B Comparison Engine. 972 tests. |
-| 2025-01-08 | 10.3 | **Certificate Generator. 1008 tests. Semana 10 completada.** |
+| 2025-01-08 | 10.3 | Certificate Generator. 1008 tests. |
+| 2025-01-08 | 11.1 | **PDF v2 Enterprise (40+ páginas). 1031 tests.** |
