@@ -16,10 +16,10 @@ FASE 1 (24h Engine):        █████████████████�
 FASE 2 (Pack 1 - €50k):     ████████████████████  100% ✅ COMPLETADO
 FASE 3 (Pack 2 - €250k):    ████████████████████  100% ✅ COMPLETADO
 FASE 4 (Optimization):      ████████████████████  100% ✅ COMPLETADO
-FASE 5 (Pack 3 - €500k):    ████░░░░░░░░░░░░░░░░   20% 🔨 EN PROGRESO
+FASE 5 (Pack 3 - €500k):    ██░░░░░░░░░░░░░░░░░░   10% 🔨 EN PROGRESO
 
 TOTAL PROGRESO:             FASE 5 EN PROGRESO
-PRÓXIMA SESIÓN:             16.x - Real-time Personalization API
+PRÓXIMA SESIÓN:             15.4 - FastAPI Routes + Templates
 ```
 
 ---
@@ -39,111 +39,147 @@ El producto mínimo vendible está completo:
 
 ## 🎯 PACK 2 (€150-250k) - COMPLETADO ✅
 
-[... contenido igual que antes ...]
+### Semana 8: Ingredients + Interactions ✅
+
+#### Sesión 8.1: Ingredientes Tier 2 ✅
+```
+[x] data/reference/ingredients.json (15 compuestos totales)
+[x] src/core/compounds/profile.py (VALID_TARGET_SYSTEMS expandidos)
+[x] tests/unit/test_ingredients_tier2.py (49 tests)
+```
+
+#### Sesión 8.2: Interaction Framework ✅
+```
+[x] src/core/interactions/__init__.py
+[x] src/core/interactions/interaction.py (Contract 3.3)
+[x] src/core/interactions/graph.py (Contract 4.1)
+[x] data/reference/interactions.json (12 compound interactions + 4 context rules)
+[x] tests/unit/test_interactions.py (31 tests)
+```
+
+### Semana 9: Evidence System ✅
+
+#### Sesión 9.1: Evidence Registry ✅
+```
+[x] src/analysis/evidence.py
+[x] tests/unit/test_evidence.py (32 tests)
+```
+
+#### Sesión 9.2: Reproducibility Bundle ✅
+```
+[x] src/reporting/bundle.py
+[x] tests/unit/test_bundle.py (34 tests)
+```
+
+### Semana 10: Advanced Features ✅
+
+#### Sesión 10.1: Full Risk Map (6 segmentos) ✅
+```
+[x] src/analysis/risk.py (1273 líneas - implementación híbrida)
+[x] tests/unit/test_risk_full.py (63 tests nuevos)
+```
+
+#### Sesión 10.2: A/B Comparison Engine ✅
+```
+[x] src/analysis/comparison.py (31KB)
+[x] tests/unit/test_comparison.py (46 tests)
+```
+
+#### Sesión 10.3: Certificate Generator ✅
+```
+[x] src/reporting/certificate.py (32KB)
+[x] tests/unit/test_certificate.py (36 tests)
+```
+
+### Semana 11: PDF v2 + API ✅
+
+#### Sesión 11.1: PDF v2 Enterprise ✅
+```
+[x] src/reporting/pdf_generator_v2.py (29KB)
+[x] tests/unit/test_pdf_generator_v2.py (23 tests)
+```
+
+#### Sesión 11.2: API Updates ✅
+```
+[x] src/api/main.py (1224 líneas - 8 endpoints REST)
+[x] tests/unit/test_api_pack2.py (65 tests)
+```
 
 ---
 
 ## ✅ FASE 4 (Optimization) - COMPLETADA
 
-[... contenido igual que antes ...]
+### Sesión 14.1: Recommendation Engine ✅ COMPLETADA
+```
+[x] src/analysis/recommendations.py (450+ líneas)
+[x] tests/unit/test_recommendations.py (33 tests)
+```
+
+### Sesión 14.2: Simple Optimizer ✅ COMPLETADA
+```
+[x] src/analysis/optimizer.py (550+ líneas)
+[x] tests/unit/test_optimizer.py (50 tests)
+```
 
 ---
 
-## 🔨 FASE 5 (Pack 3 - €500k/año) - EN PROGRESO
+## 🔨 FASE 5 (Pack 3 - €500k) - EN PROGRESO
 
-### Sesión 15.1: Consumer Web App Structure ✅ COMPLETADA
+### Sesión 15.1-15.3: Consumer Web App ✅ COMPLETADA
 ```
-[x] src/webapp/__init__.py
-[x] src/webapp/personalization.py (450+ líneas)
-[x] src/webapp/config.py (200+ líneas)
-[x] src/webapp/app.py (400+ líneas)
-[x] src/webapp/templates/base.html
-[x] src/webapp/templates/landing.html
-[x] src/webapp/templates/form.html
-[x] src/webapp/templates/result.html
-[x] src/webapp/templates/error.html
-[x] src/webapp/static/css/styles.css (600+ líneas)
-[x] src/webapp/static/js/app.js (200+ líneas)
-[x] tests/unit/test_webapp.py (45 tests)
+[x] src/webapp/__init__.py (imports relativos corregidos)
+[x] src/webapp/personalization.py (480+ líneas)
+[x] src/webapp/config.py (120+ líneas)
+[x] src/webapp/app.py (430 líneas - FastAPI app, imports corregidos)
+[x] tests/unit/test_webapp.py (35 tests)
 ```
 
 **Implementado:**
-- `UserInput` dataclass con validación completa:
-  - weight_kg (30-250 kg)
-  - wake_time, activity_time, sleep_target_time (HH:MM format)
-  - caffeine_sensitivity (slow/normal/fast)
-  - Optional: age, has_eaten
+- `CaffeineSensitivity` enum (SLOW, NORMAL, FAST)
+- `UserInput` dataclass con validación Pydantic:
+  - weight_kg, wake_time, activity_time
+  - caffeine_sensitivity, is_fasted (opcional)
+  - Validación de formato HH:MM
 - `ProductConfig` dataclass:
-  - product_id, name, caffeine_mg, has_theanine
-  - other_stimulants_mg, serving_instructions
-  - typical_timing_before_min, max_daily_servings, warnings
+  - product_id, name, base_caffeine_mg
+  - has_theanine, theanine_ratio
+  - category, warnings
 - `PersonalizationResult` dataclass:
-  - optimal_timing (HH:MM)
-  - dosage_multiplier (0.5-1.5)
-  - warnings, expected_effects, recommendations
+  - optimal_timing, dosage_multiplier
+  - warnings, benefits, expected_effects
   - to_dict() serialization
 - `PersonalizationEngine` clase principal:
-  - calculate_optimal_timing() - basado en sensibilidad y dosis
-  - calculate_dosage_multiplier() - ajuste por peso y sensibilidad
-  - generate_warnings() - sleep, high dose, sensitivity warnings
-  - generate_recommendations() - tips contextuales
-  - generate_expected_effects() - peak, duration, sleep impact
-  - personalize() - pipeline completo
-  - register_product(), get_product(), list_products()
-- `BrandConfig` dataclass (white-label):
-  - Colors (primary, secondary, accent, background, text)
-  - Logo, favicon, footer text, links
-  - to_css_vars() - genera CSS custom properties
-- `AppConfig` dataclass - configuración global
-- `PRESET_BRANDS` - 4 marcas de ejemplo
-- FastAPI Application:
-  - GET / - landing page
-  - GET /{brand_id} - brand landing
-  - GET /{brand_id}/{product_id} - product form
-  - POST /{brand_id}/{product_id}/result - show results
-  - POST /api/personalize - JSON API
-  - GET /api/products - list products
-  - GET /api/brands - list brands
-  - GET /api/health - health check
-- HTML Templates (5):
-  - base.html - layout con variables CSS
-  - landing.html - hero + products grid
-  - form.html - user input con validación
-  - result.html - timing card + effects + warnings
-  - error.html - 404/500 pages
-- CSS (mobile-first responsive):
-  - CSS custom properties for theming
-  - Dark theme con gradients
-  - Grid layouts responsive
-  - Form styling
-  - Cards con hover effects
-- JavaScript:
-  - Form validation
-  - LocalStorage para historial
-  - Web Share API integration
-  - Toast notifications
+  - register_product() / get_product() / list_products()
+  - personalize() - <100ms response time
+  - _calculate_optimal_timing() - ajusta por sensibilidad
+  - _calculate_dosage_multiplier() - ajusta por peso/sensibilidad
+  - _generate_warnings() - genera advertencias contextuales
+  - _generate_benefits() - identifica beneficios del producto
+  - _calculate_expected_effects() - efectos esperados
+- `BrandConfig` dataclass:
+  - brand_id, name, logo_url
+  - primary_color, secondary_color, accent_color
+  - Validación de colores hex
+  - to_css_vars() para estilos dinámicos
+- `AppConfig` dataclass con branding
+- `PRESET_BRANDS` con configuraciones predefinidas
+- `create_engine_with_products()` - factory function
+- `quick_personalize()` - convenience function
 
-**Características:**
-- <100ms response time (heurístico, no full simulation)
-- Marca blanca configurable
-- Mobile-first design
-- 4 productos demo pre-registrados
-- Warnings contextuales (sleep, dose, sensitivity)
-- Serialización JSON completa
+**FastAPI App (app.py):**
+- Rutas web: /{brand_id}/{product_id}, /form, /result
+- API endpoints: /api/personalize, /api/products, /api/brands
+- Jinja2 templates configurado
+- Static files configurado
 
-### Sesión 16.x: Real-time Personalization API (PENDIENTE)
+### Sesión 15.4: Templates + Static (PENDIENTE)
 ```
-[ ] src/api/personalization.py
-[ ] Cache layer para productos
-[ ] Rate limiting
-[ ] Metricas de latencia
-```
-
-### Sesión 17.x: Analytics Dashboard (PENDIENTE)
-```
-[ ] src/webapp/analytics.py
-[ ] Dashboard de uso
-[ ] Métricas de engagement
+[ ] src/webapp/templates/base.html
+[ ] src/webapp/templates/landing.html
+[ ] src/webapp/templates/form.html
+[ ] src/webapp/templates/result.html
+[ ] src/webapp/static/css/styles.css
+[ ] src/webapp/static/js/app.js
 ```
 
 ---
@@ -152,11 +188,11 @@ El producto mínimo vendible está completo:
 
 | Suite | Tests | Estado |
 |-------|-------|--------|
-| `tests/unit/` | ~1213 | ✅ |
+| `tests/unit/` | 1205 | ✅ |
 | `tests/integration/` | 11 | ✅ |
-| **TOTAL** | **~1224** | ✅ |
+| **TOTAL** | **1216** | ✅ |
 
-**`make check`: ~1224 tests**
+**`make check`: 1216 tests pasando**
 
 ---
 
@@ -200,17 +236,17 @@ modulus/
 │   │   └── certificate.py   ✅
 │   ├── api/
 │   │   └── main.py          ✅ (8 endpoints REST)
-│   └── webapp/              ✅ NEW - Sesión 15.1
+│   └── webapp/              🔨 NEW - FASE 5
 │       ├── __init__.py      ✅
-│       ├── personalization.py ✅
-│       ├── config.py        ✅
-│       ├── app.py           ✅
-│       ├── templates/       ✅ (5 templates)
-│       └── static/          ✅ (css + js)
+│       ├── personalization.py ✅ (480+ líneas)
+│       ├── config.py        ✅ (120+ líneas)
+│       ├── app.py           ✅ (430 líneas - FastAPI)
+│       ├── templates/       ⏳ (pendiente)
+│       └── static/          ⏳ (pendiente)
 │
 └── tests/
-    ├── unit/                ✅ ~1213 tests
-    │   └── test_webapp.py   ✅ (45 tests - NEW)
+    ├── unit/                ✅ 1205 tests
+    │   └── test_webapp.py   ✅ (35 tests - NEW)
     └── integration/         ✅ 11 tests
 ```
 
@@ -218,23 +254,31 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**Sesión 16.x: Real-time Personalization API**
+**FASE 5: Session 15.4 - Templates + Static Files**
 
 ```
-OBJETIVO: API optimizada para <100ms latency con caching
+OBJETIVO: Completar la interfaz web del Consumer App
 
-ARCHIVOS:
-- src/api/personalization.py (nuevo endpoint optimizado)
-- Integración con webapp/personalization.py
-- Cache layer para product profiles
-- Rate limiting
+ARCHIVOS A CREAR:
+- src/webapp/templates/base.html (layout base)
+- src/webapp/templates/landing.html (página de bienvenida)
+- src/webapp/templates/form.html (formulario de usuario)
+- src/webapp/templates/result.html (resultados personalizados)
+- src/webapp/static/css/styles.css (estilos responsive)
+- src/webapp/static/js/app.js (interactividad)
 
 ESPECIFICACIÓN:
-POST /api/v2/personalize
-- <100ms p99 latency
-- Cached product profiles
-- Rate limiting por IP
-- Métricas de latencia
+- Mobile-first responsive design
+- Marca blanca (colores dinámicos via CSS vars)
+- Formulario: peso, hora despertar, hora entreno, sensibilidad cafeína
+- Resultados: timing óptimo, dosis ajustada, warnings, beneficios
+- Animaciones suaves y feedback visual
+
+PARA PROBAR:
+cd ~/Downloads/modulus
+pip3 install jinja2 --break-system-packages
+PYTHONPATH=src python3 -m uvicorn src.webapp.app:app --reload --port 8080
+# Abrir: http://localhost:8080/energyx/energy_pro
 ```
 
 ---
@@ -248,7 +292,7 @@ POST /api/v2/personalize
 | 2025-01-08 | FASE 2 completada | **Pack 1 vendible (€50k)** |
 | 2025-01-08 | FASE 3 completada | **Pack 2 vendible (€150-250k)** |
 | 2025-01-08 | FASE 4 completada | **Optimization + Recommendation Engine** |
-| 2025-01-08 | Sesión 15.1 | **Consumer Web App estructura completa** |
+| 2025-01-08 | FASE 5 iniciada | **Consumer Web App (Session 15.1-15.3)** |
 
 ---
 
@@ -273,5 +317,5 @@ POST /api/v2/personalize
 | 2025-01-08 | 11.1 | PDF v2 Enterprise (40+ páginas). 1031 tests. |
 | 2025-01-08 | 11.2 | API Pack 2 (8 endpoints). 1096 tests. FASE 3 COMPLETADA. |
 | 2025-01-08 | 14.1 | Recommendation Engine. 1129 tests. |
-| 2025-01-08 | 14.2 | Simple Optimizer. ~1179 tests. FASE 4 COMPLETADA. |
-| 2025-01-08 | 15.1 | **Consumer Web App. ~1224 tests. FASE 5 iniciada.** |
+| 2025-01-08 | 14.2 | Simple Optimizer. 1179 tests. FASE 4 COMPLETADA. |
+| 2025-01-08 | 15.1-15.3 | **Consumer Web App + tests. 1216 tests. FASE 5 iniciada.** |
