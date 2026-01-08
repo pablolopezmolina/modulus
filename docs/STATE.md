@@ -14,12 +14,12 @@
 FASE 0 (Anti-Frankenstein): ████████████████████  100% ✅ COMPLETADO
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
 FASE 2 (Pack 1 - €50k):     ████████████████████  100% ✅ COMPLETADO
-FASE 3 (Pack 2 - €250k):    ████████░░░░░░░░░░░░   40% 🔨 EN PROGRESO
+FASE 3 (Pack 2 - €250k):    ██████████░░░░░░░░░░   50% 🔨 EN PROGRESO
 FASE 4 (Optimization):      ░░░░░░░░░░░░░░░░░░░░    0%
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 3 - Semana 8 completada
-PRÓXIMA SESIÓN:             9.1 - Evidence Registry
+TOTAL PROGRESO:             FASE 3 - Sesión 9.1 completada
+PRÓXIMA SESIÓN:             9.2 - Reproducibility Bundle
 ```
 
 ---
@@ -57,38 +57,35 @@ El producto mínimo vendible está completo:
 [x] tests/unit/test_interactions.py (31 tests)
 ```
 
-**Completado:** 2025-01-08
-**Tests totales:** 805 (794 unit + 11 integration)
+### Semana 9: Evidence System 🔨 EN PROGRESO
 
-**Compound-Compound Interactions (12):**
-
-| Interaction | Type | Target Param | Effect | Evidence |
-|-------------|------|--------------|--------|----------|
-| caffeine + l_theanine | synergy | jitter_risk | ×0.5 | high |
-| caffeine + l_theanine | synergy | focus_enhancement | ×1.25 | high |
-| caffeine + food | absorption | tmax_minutes | +30 | high |
-| glucose + protein | absorption | gastric_emptying | ×0.85 | high |
-| glucose + fat | absorption | gastric_emptying | ×0.80 | high |
-| glucose + fiber | absorption | glucose_peak | ×0.85 | high |
-| glucose + creatine | absorption | creatine_uptake | ×1.25 | high |
-| caffeine + tyrosine | synergy | focus_enhancement | ×1.30 | medium |
-| caffeine + beta_alanine | synergy | exercise_performance | ×1.15 | medium |
-| caffeine + alpha_gpc | synergy | power_output | ×1.10 | medium |
-| l_theanine + tyrosine | synergy | calm_focus | ×1.20 | medium |
-| magnesium + vitamin_b6 | synergy | stress_reduction | ×1.25 | high |
-
-**Context Rules (4):**
-
-| Rule | Condition | Target Param | Effect | Evidence |
-|------|-----------|--------------|--------|----------|
-| High caffeine | >300mg | jitter_risk | ×1.50 | high |
-| Afternoon caffeine | after 14:00 | sleep_disruption_risk | ×2.0 | high |
-| Very high caffeine | >400mg | anxiety_risk | ×1.75 | high |
-| Excessive daily | >600mg/day | tolerance_development | =0.8 | medium |
-
-### Semana 9: Evidence System ❌ PENDIENTE
+#### Sesión 9.1: Evidence Registry ✅ COMPLETADA
 ```
-[ ] src/analysis/evidence.py (Evidence Registry)
+[x] src/analysis/evidence.py
+[x] tests/unit/test_evidence.py (35+ tests)
+```
+
+**Funcionalidades implementadas:**
+- `EvidenceSource`: Dataclass inmutable para fuentes (papers, DBs, textbooks)
+- `ParameterEvidence`: Link entre parámetros y fuentes con confidence
+- `EvidenceRegistry`: Sistema central de trazabilidad
+  - Gestión de sources (add, get, list)
+  - Gestión de parameter evidence
+  - Export BibTeX (single y all)
+  - Generación de evidence table (para PDF)
+  - Format citation (APA y short)
+  - Validación DOI
+  - Summary statistics
+  - Serialización JSON completa
+
+**Tipos de source válidos:** peer_reviewed, database, textbook, meta_analysis, clinical_trial
+
+**Niveles de confidence:** high, medium, low, theoretical
+
+**Completado:** 2025-01-08
+
+#### Sesión 9.2: Reproducibility Bundle ❌ PENDIENTE
+```
 [ ] src/reporting/bundle.py (Reproducibility Bundle)
 ```
 
@@ -140,11 +137,11 @@ El producto mínimo vendible está completo:
 
 | Suite | Tests | Estado |
 |-------|-------|--------|
-| `tests/unit/` | 794 | ✅ |
+| `tests/unit/` | ~830 | ✅ |
 | `tests/integration/` | 11 | ✅ |
-| **TOTAL** | **805** | ✅ |
+| **TOTAL** | **~841** | ✅ |
 
-**`make check`: 805 tests en ~22s**
+**`make check`: ~841 tests en ~25s**
 
 ---
 
@@ -185,13 +182,20 @@ modulus/
 │   │       ├── __init__.py  ✅
 │   │       ├── interaction.py ✅ (Contract 3.3)
 │   │       └── graph.py     ✅ (Contract 4.1)
-│   ├── analysis/            ✅ (Fase 2)
+│   ├── analysis/            ✅ (Fase 2 + Sesión 9.1)
+│   │   ├── metrics.py       ✅
+│   │   ├── risk.py          ✅
+│   │   ├── decision.py      ✅
+│   │   ├── claims.py        ✅
+│   │   └── evidence.py      ✅ (Sesión 9.1) ← NUEVO
 │   ├── reporting/           ✅ (Fase 2)
+│   │   └── pdf_generator.py ✅
 │   └── api/                 ✅ (heredado v1)
 │
 ├── tests/
-│   ├── unit/                ✅ 794 tests
+│   ├── unit/                ✅ ~830 tests
 │   │   ├── test_interactions.py ✅ (31 tests)
+│   │   ├── test_evidence.py     ✅ (35+ tests) ← NUEVO
 │   │   └── ...
 │   ├── integration/         ✅ 11 tests
 │   └── golden/              ✅
@@ -206,23 +210,29 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 3, Sesión 9.1: Evidence Registry**
+**FASE 3, Sesión 9.2: Reproducibility Bundle**
 
 ```
-OBJETIVO: Sistema de trazabilidad de evidencia para Pack 2
+OBJETIVO: Sistema de reproducibilidad para auditoría Pack 2
 
 ARCHIVOS A CREAR:
-- src/analysis/evidence.py
+- src/reporting/bundle.py
 
 FUNCIONALIDADES:
-- EvidenceRegistry: Base de datos de fuentes científicas
-- Cada parámetro → source (DOI/DB) + confidence + notes
-- generate_evidence_table() → para PDF
-- export_citations() → BibTeX o lista
+- ReproducibilityBundle: Empaqueta todos los inputs para reproducción
+- Contenido:
+  * config.json (todos los inputs)
+  * version: str (MODULUS version)
+  * hash: str (SHA256 de inputs)
+  * seed: int
+  * timestamp: str
+  * ingredient_versions: Dict
+- export() → JSON file
+- verify(bundle, results) → bool
 
 CRITERIOS DE ÉXITO:
-- Todos los parámetros de ingredientes trazables
-- Export a formato citeable
+- Bundle permite recrear simulación exacta
+- Hash verificable
 - Integración con PDF v2
 - `make check` pasa
 ```
@@ -241,4 +251,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | 6.1-6.2 | Decision Engine + Claims |
 | 2025-01-08 | 7.1 | PDF v1. FASE 2 COMPLETADA. Pack 1 listo. |
 | 2025-01-08 | 8.1 | 15 ingredientes Tier 1+2. 56 DOIs. |
-| 2025-01-08 | 8.2 | **Interaction Framework: 12 interacciones + 4 context rules. 805 tests.** |
+| 2025-01-08 | 8.2 | Interaction Framework: 12 interacciones + 4 context rules. 805 tests. |
+| 2025-01-08 | 9.1 | **Evidence Registry: trazabilidad científica, BibTeX, tables. ~841 tests.** |
