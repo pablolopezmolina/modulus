@@ -15,11 +15,11 @@ FASE 0 (Anti-Frankenstein): █████████████████�
 FASE 1 (24h Engine):        ████████████████████  100% ✅ COMPLETADO
 FASE 2 (Pack 1 - €50k):     ████████████████████  100% ✅ COMPLETADO
 FASE 3 (Pack 2 - €250k):    ████████████████████  100% ✅ COMPLETADO
-FASE 4 (Optimization):      ██████░░░░░░░░░░░░░░   50% 🔨 EN PROGRESO
+FASE 4 (Optimization):      ████████████████████  100% ✅ COMPLETADO
 FASE 5 (Pack 3 - €500k):    ░░░░░░░░░░░░░░░░░░░░    0%
 
-TOTAL PROGRESO:             FASE 4 EN PROGRESO
-PRÓXIMA SESIÓN:             14.2 - Simple Optimizer
+TOTAL PROGRESO:             FASE 4 COMPLETADA
+PRÓXIMA SESIÓN:             15.x - Consumer Web App (FASE 5)
 ```
 
 ---
@@ -107,7 +107,7 @@ El producto mínimo vendible está completo:
 
 ---
 
-## 🔨 FASE 4 (Optimization) - EN PROGRESO
+## ✅ FASE 4 (Optimization) - COMPLETADA
 
 ### Sesión 14.1: Recommendation Engine ✅ COMPLETADA
 ```
@@ -116,28 +116,65 @@ El producto mínimo vendible está completo:
 ```
 
 **Implementado:**
-- `RecommendationType` enum (5 tipos: ingredient_adjustment, timing_optimization, addition_suggestion, label_warning, removal_suggestion)
-- `Recommendation` dataclass (con expected_impact, confidence, evidence_summary)
-- `RecommendationReport` dataclass (con filtros por tipo/prioridad y serialización)
+- `RecommendationType` enum (5 tipos)
+- `Recommendation` dataclass con expected_impact, confidence, evidence_summary
+- `RecommendationReport` dataclass con filtros por tipo/prioridad
 - `RecommendationConfig` dataclass (thresholds configurables)
-- `RecommendationEngine` clase principal con método `analyze()`
+- `RecommendationEngine` clase principal
 
-**Tipos de recomendaciones generadas:**
-1. ✅ Ingredient adjustment: "Reducir cafeína 300→200mg" (basado en jitter_risk)
-2. ✅ Timing optimization: "Tomar antes de las 14:00" (basado en sleep_risk)
-3. ✅ Addition suggestion: "Añadir L-Theanine 200mg" (sinergia cafeína)
-4. ✅ Label warning: "Not for caffeine-sensitive individuals"
+### Sesión 14.2: Simple Optimizer ✅ COMPLETADA
+```
+[x] src/analysis/optimizer.py (550+ líneas)
+[x] tests/unit/test_optimizer.py (50 tests)
+```
+
+**Implementado:**
+- `OptimizationObjective` enum (MAX_EFFICACY, MIN_RISK, BALANCED)
+- `OptimizationConstraints` dataclass:
+  - max_caffeine_mg, max_total_stimulants_mg
+  - max_cost_factor
+  - must_include, must_exclude (compound IDs)
+  - min_dose_ratios, max_dose_ratios
+  - validate_formulation() method
+- `OptimizerConfig` dataclass:
+  - dose_steps (default: [0.5, 0.75, 1.0, 1.25, 1.5])
+  - max_variants, top_n
+  - include_additions, include_removals
+  - use_known_improvements
+- `OptimizationResult` dataclass:
+  - formulation, score, efficacy_score, risk_score
+  - metrics, risk_analysis, changes_from_base
+  - to_dict() serialization
+- `OptimizationReport` dataclass:
+  - base_formulation, objective, constraints
+  - top_variants, base_evaluation
+  - total_variants_evaluated, valid_variants
+  - improvement_achieved (% over base)
+  - comparison_table
+  - to_dict() serialization
+- `FormulationOptimizer` clase principal:
+  - _generate_dose_variants() - grid search por dosis
+  - _generate_variants_with_constraints() - respeta constraints
+  - _generate_addition_variants() - agrega ingredientes sinérgicos
+  - _generate_improvement_variants() - aplica mejoras conocidas
+  - _calculate_efficacy_score() - score 0-1
+  - _calculate_risk_score() - score 0-1
+  - _calculate_combined_score() - combina según objetivo
+  - _describe_changes() - describe cambios desde base
+  - _build_comparison_table() - tabla comparativa
+  - optimize() - pipeline completo
+- `MockFormulationEvaluator` - evaluador basado en heurísticas
+- `optimize_formulation()` - convenience function
+- `format_optimization_report()` - formato texto
 
 **Features:**
-- Priority scoring (1-5, donde 1 = más urgente)
-- Confidence levels (HIGH=0.90, MEDIUM=0.75, LOW=0.60)
-- Evidence summaries con referencias científicas
-- Expected impact calculations (Δ en métricas de riesgo)
-- Key issues identification automática
-- Overall improvement potential score (0-1)
-- Text formatting utility (`format_recommendations_text()`)
-- JSON serialization (`to_dict()`)
-- Convenience function (`generate_recommendations()`)
+- Grid search sobre combinaciones de dosis
+- Respeta constraints (caffeine limits, must_include/exclude)
+- Sugiere adiciones sinérgicas (l_theanine con caffeine)
+- Aplica mejoras conocidas (caffeine-theanine ratio)
+- Calcula improvement % sobre base
+- Genera comparison table para PDF
+- JSON serialization completo
 
 ---
 
@@ -145,11 +182,11 @@ El producto mínimo vendible está completo:
 
 | Suite | Tests | Estado |
 |-------|-------|--------|
-| `tests/unit/` | 1118 | ✅ |
+| `tests/unit/` | ~1168 | ✅ |
 | `tests/integration/` | 11 | ✅ |
-| **TOTAL** | **1129** | ✅ |
+| **TOTAL** | **~1179** | ✅ |
 
-**`make check`: 1129 tests en ~28s**
+**`make check`: ~1179 tests**
 
 ---
 
@@ -184,7 +221,8 @@ modulus/
 │   │   ├── claims.py        ✅
 │   │   ├── evidence.py      ✅
 │   │   ├── comparison.py    ✅ (A/B Comparison)
-│   │   └── recommendations.py ✅ (NEW - Sesión 14.1)
+│   │   ├── recommendations.py ✅ (Sesión 14.1)
+│   │   └── optimizer.py     ✅ (NEW - Sesión 14.2)
 │   ├── reporting/
 │   │   ├── pdf_generator.py ✅ (v1)
 │   │   ├── pdf_generator_v2.py ✅ (40+ páginas)
@@ -194,8 +232,9 @@ modulus/
 │       └── main.py          ✅ (8 endpoints REST)
 │
 └── tests/
-    ├── unit/                ✅ 1118 tests
-    │   └── test_recommendations.py ✅ (33 tests - NEW)
+    ├── unit/                ✅ ~1168 tests
+    │   ├── test_recommendations.py ✅ (33 tests)
+    │   └── test_optimizer.py ✅ (50 tests - NEW)
     └── integration/         ✅ 11 tests
 ```
 
@@ -203,29 +242,25 @@ modulus/
 
 ## PRÓXIMA SESIÓN
 
-**FASE 4, Sesión 14.2: Simple Optimizer**
+**FASE 5: Pack 3 - Powered By (Consumer Web App)**
 
 ```
-OBJETIVO: Optimizador de fórmulas por grid search
+OBJETIVO: Consumer-facing web app + Real-time personalization API
 
-ARCHIVOS A CREAR:
-- src/analysis/optimizer.py
-- tests/unit/test_optimizer.py
+SESIONES 15.x: Consumer Web App
+- src/webapp/__init__.py
+- src/webapp/app.py (FastAPI + templates)
+- src/webapp/templates/
+- src/webapp/static/
 
 ESPECIFICACIÓN:
-- class FormulationOptimizer
-- optimize(base_formula, objective, constraints) → List[Formulation]
-- Objetivos: max_efficacy, min_risk, balanced
-- Constraints: max_caffeine, max_cost, must_include, must_exclude
-- Método: Grid search sobre variantes razonables
-- Output: Top 3 fórmulas + comparison
-
-CRITERIOS DE ÉXITO:
-- Genera variantes de fórmulas automáticamente
-- Evalúa cada variante con simulación rápida
-- Retorna ranking con métricas comparativas
-- Tests pasan
-- `make check` pasa
+- Web app responsive (mobile-first)
+- Marca blanca (colores/logo del cliente)
+- Flow:
+  1. User scans QR / clicks link
+  2. Form: peso, hora despertar, hora entreno
+  3. Output: timing óptimo, dosis ajustada, warnings
+- <100ms response time
 ```
 
 ---
@@ -238,7 +273,7 @@ CRITERIOS DE ÉXITO:
 | 2025-01-07 | FASE 1 completada | 24h Engine funcional |
 | 2025-01-08 | FASE 2 completada | **Pack 1 vendible (€50k)** |
 | 2025-01-08 | FASE 3 completada | **Pack 2 vendible (€150-250k)** |
-| 2025-01-08 | Sesión 14.1 completada | Recommendation Engine |
+| 2025-01-08 | FASE 4 completada | **Optimization + Recommendation Engine** |
 
 ---
 
@@ -262,4 +297,5 @@ CRITERIOS DE ÉXITO:
 | 2025-01-08 | 10.3 | Certificate Generator. 1008 tests. |
 | 2025-01-08 | 11.1 | PDF v2 Enterprise (40+ páginas). 1031 tests. |
 | 2025-01-08 | 11.2 | API Pack 2 (8 endpoints). 1096 tests. FASE 3 COMPLETADA. |
-| 2025-01-08 | 14.1 | **Recommendation Engine. 1129 tests. FASE 4 iniciada.** |
+| 2025-01-08 | 14.1 | Recommendation Engine. 1129 tests. |
+| 2025-01-08 | 14.2 | **Simple Optimizer. ~1179 tests. FASE 4 COMPLETADA.** |
