@@ -62,7 +62,7 @@ El producto mínimo vendible está completo:
 #### Sesión 9.1: Evidence Registry ✅ COMPLETADA
 ```
 [x] src/analysis/evidence.py
-[x] tests/unit/test_evidence.py (35+ tests)
+[x] tests/unit/test_evidence.py (32 tests)
 ```
 
 **Funcionalidades implementadas:**
@@ -137,11 +137,11 @@ El producto mínimo vendible está completo:
 
 | Suite | Tests | Estado |
 |-------|-------|--------|
-| `tests/unit/` | ~830 | ✅ |
+| `tests/unit/` | 826 | ✅ |
 | `tests/integration/` | 11 | ✅ |
-| **TOTAL** | **~841** | ✅ |
+| **TOTAL** | **837** | ✅ |
 
-**`make check`: ~841 tests en ~25s**
+**`make check`: 837 tests en ~22s**
 
 ---
 
@@ -193,9 +193,9 @@ modulus/
 │   └── api/                 ✅ (heredado v1)
 │
 ├── tests/
-│   ├── unit/                ✅ ~830 tests
+│   ├── unit/                ✅ 826 tests
 │   │   ├── test_interactions.py ✅ (31 tests)
-│   │   ├── test_evidence.py     ✅ (35+ tests) ← NUEVO
+│   │   ├── test_evidence.py     ✅ (32 tests) ← NUEVO
 │   │   └── ...
 │   ├── integration/         ✅ 11 tests
 │   └── golden/              ✅
@@ -252,4 +252,4 @@ CRITERIOS DE ÉXITO:
 | 2025-01-08 | 7.1 | PDF v1. FASE 2 COMPLETADA. Pack 1 listo. |
 | 2025-01-08 | 8.1 | 15 ingredientes Tier 1+2. 56 DOIs. |
 | 2025-01-08 | 8.2 | Interaction Framework: 12 interacciones + 4 context rules. 805 tests. |
-| 2025-01-08 | 9.1 | **Evidence Registry: trazabilidad científica, BibTeX, tables. ~841 tests.** |
+| 2025-01-08 | 9.1 | **Evidence Registry: trazabilidad científica, BibTeX, tables. 837 tests.** |
