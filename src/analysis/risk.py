@@ -1,7 +1,8 @@
 """
 Risk Analysis Module for MODULUS.
 
-Session 5.2: Basic Risk Map
+Session 5.2: Basic Risk Map (original)
+Session 10.1: Full Risk Map with 6 segmentations (extended)
 
 This module provides:
 - RiskThresholds: Configurable thresholds for risk classification
@@ -10,6 +11,15 @@ This module provides:
 - DangerZone: Identification of high-risk population segments
 - RiskAnalyzer: Main analyzer class
 - RiskAnalysisResult: Complete risk analysis output
+
+NEW in Session 10.1:
+- SegmentationType: Enum for 6 segmentation dimensions
+- RiskType: Enum for risk types
+- SegmentClassifier: Classifies individuals across all dimensions
+- RiskMatrixCell: Immutable cell with danger zone flag
+- RiskMatrix: Full 6-dimensional risk matrix
+- FullRiskMapAnalyzer: Analyzer for complete risk matrix
+- DangerZoneDetector: Identifies high-risk cells
 
 The module consumes PopulationDayResult (from session 5.1) and produces
 structured risk analysis for the Decision Engine (session 6.1).
@@ -43,6 +53,62 @@ class RiskLevel(Enum):
 
     def __ge__(self, other: "RiskLevel") -> bool:
         return not self < other
+
+    @classmethod
+    def from_percentage(cls, pct: float, low_threshold: float = 10.0, high_threshold: float = 25.0) -> "RiskLevel":
+        """Get risk level from percentage value."""
+        if pct < low_threshold:
+            return cls.LOW
+        elif pct >= high_threshold:
+            return cls.HIGH
+        else:
+            return cls.MEDIUM
+
+
+class SegmentationType(Enum):
+    """
+    Segmentation dimensions for population analysis.
+    
+    Session 10.1: Extended from 3 to 6 segmentations.
+    """
+    # Original 3 segmentations (Pack 1)
+    BMI = "by_bmi"
+    AGE = "by_age"
+    CAFFEINE_SENSITIVITY = "by_caffeine_sensitivity"
+    
+    # New 3 segmentations (Pack 2)
+    INSULIN_SENSITIVITY = "by_insulin_sensitivity"
+    ACTIVITY_LEVEL = "by_activity_level"
+    HABITUAL_CAFFEINE = "by_habitual_caffeine"
+
+
+class RiskType(Enum):
+    """
+    Types of risks evaluated.
+    
+    Session 10.1: Formalized risk types.
+    """
+    HYPERGLYCEMIA = "pct_hyperglycemia"
+    SEVERE_HYPERGLYCEMIA = "pct_severe_hyperglycemia"
+    HYPOGLYCEMIA = "pct_hypoglycemia"
+    JITTER = "pct_jitter_risk"
+    SLEEP_DISRUPTION = "pct_sleep_disruption"
+    CRASH = "pct_crash_risk"
+
+
+# =============================================================================
+# SEGMENT VALUES
+# =============================================================================
+
+# Segment value definitions for each segmentation type
+SEGMENT_VALUES = {
+    SegmentationType.BMI: ["normal", "overweight", "obese"],
+    SegmentationType.AGE: ["young", "middle", "older"],
+    SegmentationType.CAFFEINE_SENSITIVITY: ["slow", "normal", "fast"],
+    SegmentationType.INSULIN_SENSITIVITY: ["sensitive", "normal", "resistant"],
+    SegmentationType.ACTIVITY_LEVEL: ["sedentary", "moderate", "active"],
+    SegmentationType.HABITUAL_CAFFEINE: ["naive", "moderate", "heavy"],
+}
 
 
 # =============================================================================
@@ -198,7 +264,7 @@ class SegmentRisk:
 
 
 # =============================================================================
-# RISK MAP
+# RISK MAP (Original API)
 # =============================================================================
 
 @dataclass
@@ -424,7 +490,7 @@ class RiskAnalysisResult:
 
 
 # =============================================================================
-# RISK ANALYZER
+# RISK ANALYZER (Original API)
 # =============================================================================
 
 # Risk metric definitions
@@ -472,6 +538,27 @@ DANGER_ZONE_RECOMMENDATIONS = {
     ("by_age", "older", "pct_hyperglycemia"): (
         "Consider age-specific dosing guidance. Older adults may benefit "
         "from reduced carbohydrate portions."
+    ),
+    # New recommendations for extended segmentations (Session 10.1)
+    ("by_insulin_sensitivity", "resistant", "pct_hyperglycemia"): (
+        "Consider reformulation for insulin-resistant consumers. "
+        "Add fiber or reduce simple carbohydrates."
+    ),
+    ("by_insulin_sensitivity", "resistant", "pct_severe_hyperglycemia"): (
+        "Strong warning for diabetic/prediabetic consumers. "
+        "Consider separate low-glycemic product line."
+    ),
+    ("by_activity_level", "sedentary", "pct_hyperglycemia"): (
+        "Recommend consuming with physical activity. "
+        "Consider reduced-carbohydrate version for sedentary users."
+    ),
+    ("by_habitual_caffeine", "naive", "pct_jitter_risk"): (
+        "Include warning for caffeine-naive consumers. "
+        "Suggest starting with half serving."
+    ),
+    ("by_habitual_caffeine", "naive", "pct_sleep_disruption"): (
+        "Caffeine-naive users should avoid afternoon consumption. "
+        "Add prominent timing guidance."
     ),
 }
 
@@ -605,7 +692,7 @@ class RiskAnalyzer:
         """
         if metric_name == "glucose_peak_mean":
             # Estimate hyperglycemia risk based on mean glucose peak
-            # Higher mean → higher proportion above threshold
+            # Higher mean -> higher proportion above threshold
             threshold = self.thresholds.hyperglycemia_threshold_mg_dl
             if metric_value < threshold - 20:
                 return 5.0  # Low risk
@@ -646,7 +733,7 @@ class RiskAnalyzer:
                 if dim in subgroup_analysis and seg_val in subgroup_analysis[dim]:
                     pop_pct = subgroup_analysis[dim][seg_val].get("pct", 0.0)
 
-                # Calculate severity score (risk × population impact)
+                # Calculate severity score (risk x population impact)
                 severity = risk_value * (pop_pct / 100.0)
 
                 # Get recommendation
@@ -667,3 +754,520 @@ class RiskAnalyzer:
 
         # Sort by severity score
         return sorted(danger_zones, key=lambda dz: dz.severity_score, reverse=True)
+
+
+# =============================================================================
+# SESSION 10.1: FULL RISK MAP (6 SEGMENTATIONS)
+# =============================================================================
+
+# Segment classification thresholds
+SEGMENT_THRESHOLDS = {
+    SegmentationType.BMI: {
+        "overweight": 25.0,  # BMI >= 25
+        "obese": 30.0,       # BMI >= 30
+    },
+    SegmentationType.AGE: {
+        "middle": 36,        # Age >= 36
+        "older": 56,         # Age >= 56
+    },
+    SegmentationType.CAFFEINE_SENSITIVITY: {
+        # Based on CYP1A2 genotype mapping
+        "slow": "slow",
+        "normal": "normal",
+        "fast": "fast",
+    },
+    SegmentationType.INSULIN_SENSITIVITY: {
+        "sensitive": 1.2,    # ISF > 1.2
+        "resistant": 0.8,    # ISF < 0.8
+    },
+    SegmentationType.ACTIVITY_LEVEL: {
+        # Maps from VirtualPerson activity_level
+        "sedentary": ["sedentary"],
+        "moderate": ["light", "moderate"],
+        "active": ["active", "very_active"],
+    },
+    SegmentationType.HABITUAL_CAFFEINE: {
+        "naive": 50.0,       # < 50 mg/day
+        "heavy": 300.0,      # >= 300 mg/day
+    },
+}
+
+
+@dataclass(frozen=True)
+class RiskMatrixCell:
+    """
+    A single cell in the full risk matrix.
+    
+    Represents risk for a specific segment-risk combination.
+    """
+    risk_percentage: float
+    population_percentage: float
+    count: int
+    is_danger_zone: bool = False
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "risk_percentage": self.risk_percentage,
+            "population_percentage": self.population_percentage,
+            "count": self.count,
+            "is_danger_zone": self.is_danger_zone,
+        }
+
+
+@dataclass
+class RiskMatrix:
+    """
+    Full 6-dimensional risk matrix.
+    
+    Session 10.1: Extended risk map with all 6 segmentations.
+    """
+    
+    # Storage: (segmentation_type, segment_value, risk_type) -> cell
+    _cells: Dict[Tuple[SegmentationType, str, RiskType], RiskMatrixCell] = field(
+        default_factory=dict
+    )
+    
+    # Population counts per segment
+    _segment_counts: Dict[Tuple[SegmentationType, str], int] = field(
+        default_factory=dict
+    )
+    
+    # Total population
+    total_population: int = 0
+    
+    def add_cell(
+        self,
+        segmentation: SegmentationType,
+        segment_value: str,
+        risk_type: RiskType,
+        cell: RiskMatrixCell,
+    ) -> None:
+        """Add a cell to the matrix."""
+        key = (segmentation, segment_value, risk_type)
+        self._cells[key] = cell
+    
+    def get_cell(
+        self,
+        segmentation: SegmentationType,
+        segment_value: str,
+        risk_type: RiskType,
+    ) -> Optional[RiskMatrixCell]:
+        """Get a specific cell."""
+        key = (segmentation, segment_value, risk_type)
+        return self._cells.get(key)
+    
+    def get_segment_risks(
+        self,
+        segmentation: SegmentationType,
+        segment_value: str,
+    ) -> Dict[RiskType, RiskMatrixCell]:
+        """Get all risks for a specific segment."""
+        result = {}
+        for (seg_type, seg_val, risk_type), cell in self._cells.items():
+            if seg_type == segmentation and seg_val == segment_value:
+                result[risk_type] = cell
+        return result
+    
+    def get_risk_by_segmentation(
+        self,
+        segmentation: SegmentationType,
+        risk_type: RiskType,
+    ) -> Dict[str, RiskMatrixCell]:
+        """Get a specific risk across all segments in a dimension."""
+        result = {}
+        for (seg_type, seg_val, r_type), cell in self._cells.items():
+            if seg_type == segmentation and r_type == risk_type:
+                result[seg_val] = cell
+        return result
+    
+    def get_all_danger_zones(self) -> List[Tuple[SegmentationType, str, RiskType, RiskMatrixCell]]:
+        """Get all cells marked as danger zones."""
+        return [
+            (seg_type, seg_val, risk_type, cell)
+            for (seg_type, seg_val, risk_type), cell in self._cells.items()
+            if cell.is_danger_zone
+        ]
+    
+    def get_table_for_segmentation(
+        self,
+        segmentation: SegmentationType,
+    ) -> Dict[str, Any]:
+        """
+        Get matrix table for a specific segmentation.
+        
+        Returns:
+            {
+                "rows": ["normal", "overweight", "obese"],
+                "columns": ["HYPERGLYCEMIA", "JITTER", ...],
+                "values": [[10.0, 5.0], [20.0, 8.0], ...]
+            }
+        """
+        segment_vals = SEGMENT_VALUES.get(segmentation, [])
+        risk_types = list(RiskType)
+        
+        values = []
+        for seg_val in segment_vals:
+            row = []
+            for risk_type in risk_types:
+                cell = self.get_cell(segmentation, seg_val, risk_type)
+                row.append(cell.risk_percentage if cell else 0.0)
+            values.append(row)
+        
+        return {
+            "segmentation": segmentation.value,
+            "rows": segment_vals,
+            "columns": [rt.name for rt in risk_types],
+            "values": values,
+        }
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        cells_dict = {}
+        for (seg_type, seg_val, risk_type), cell in self._cells.items():
+            key = f"{seg_type.value}|{seg_val}|{risk_type.value}"
+            cells_dict[key] = cell.to_dict()
+        
+        return {
+            "total_population": self.total_population,
+            "cells": cells_dict,
+            "segment_counts": {
+                f"{seg_type.value}|{seg_val}": count
+                for (seg_type, seg_val), count in self._segment_counts.items()
+            },
+        }
+
+
+class SegmentClassifier:
+    """
+    Classifies individuals into segments across all 6 dimensions.
+    
+    Session 10.1: Supports all 6 segmentation types.
+    """
+    
+    @staticmethod
+    def classify_bmi(bmi: float) -> str:
+        """Classify BMI into normal/overweight/obese."""
+        thresholds = SEGMENT_THRESHOLDS[SegmentationType.BMI]
+        if bmi >= thresholds["obese"]:
+            return "obese"
+        elif bmi >= thresholds["overweight"]:
+            return "overweight"
+        return "normal"
+    
+    @staticmethod
+    def classify_age(age: int) -> str:
+        """Classify age into young/middle/older."""
+        thresholds = SEGMENT_THRESHOLDS[SegmentationType.AGE]
+        if age >= thresholds["older"]:
+            return "older"
+        elif age >= thresholds["middle"]:
+            return "middle"
+        return "young"
+    
+    @staticmethod
+    def classify_caffeine_sensitivity(genotype: str) -> str:
+        """Classify caffeine sensitivity from CYP1A2 genotype."""
+        return genotype.lower() if genotype.lower() in ["slow", "normal", "fast"] else "normal"
+    
+    @staticmethod
+    def classify_insulin_sensitivity(isf: float) -> str:
+        """Classify insulin sensitivity factor."""
+        thresholds = SEGMENT_THRESHOLDS[SegmentationType.INSULIN_SENSITIVITY]
+        if isf > thresholds["sensitive"]:
+            return "sensitive"
+        elif isf < thresholds["resistant"]:
+            return "resistant"
+        return "normal"
+    
+    @staticmethod
+    def classify_activity_level(activity: str) -> str:
+        """Classify activity level into sedentary/moderate/active."""
+        mappings = SEGMENT_THRESHOLDS[SegmentationType.ACTIVITY_LEVEL]
+        activity_lower = activity.lower()
+        for category, levels in mappings.items():
+            if activity_lower in levels:
+                return category
+        return "moderate"  # Default
+    
+    @staticmethod
+    def classify_habitual_caffeine(mg_per_day: float) -> str:
+        """Classify habitual caffeine intake."""
+        thresholds = SEGMENT_THRESHOLDS[SegmentationType.HABITUAL_CAFFEINE]
+        if mg_per_day < thresholds["naive"]:
+            return "naive"
+        elif mg_per_day >= thresholds["heavy"]:
+            return "heavy"
+        return "moderate"
+    
+    def classify_person(self, person: Any) -> Dict[SegmentationType, str]:
+        """
+        Classify a VirtualPerson across all 6 dimensions.
+        
+        Args:
+            person: VirtualPerson object with required attributes
+            
+        Returns:
+            Dict mapping SegmentationType to segment value
+        """
+        return {
+            SegmentationType.BMI: self.classify_bmi(person.bmi),
+            SegmentationType.AGE: self.classify_age(person.age),
+            SegmentationType.CAFFEINE_SENSITIVITY: self.classify_caffeine_sensitivity(
+                person.cyp1a2_genotype
+            ),
+            SegmentationType.INSULIN_SENSITIVITY: self.classify_insulin_sensitivity(
+                person.insulin_sensitivity_factor
+            ),
+            SegmentationType.ACTIVITY_LEVEL: self.classify_activity_level(
+                person.activity_level
+            ),
+            SegmentationType.HABITUAL_CAFFEINE: self.classify_habitual_caffeine(
+                person.habitual_caffeine_mg
+            ),
+        }
+
+
+class DangerZoneDetector:
+    """
+    Detects danger zones in risk matrix.
+    
+    Session 10.1: Configurable threshold for danger zone identification.
+    """
+    
+    def __init__(self, threshold: float = 25.0):
+        """
+        Initialize detector.
+        
+        Args:
+            threshold: Risk percentage above which is considered danger zone
+        """
+        self.threshold = threshold
+    
+    def is_danger_zone(self, risk_percentage: float) -> bool:
+        """Check if a risk percentage constitutes a danger zone."""
+        return risk_percentage >= self.threshold
+    
+    def find_danger_zones(
+        self,
+        risk_matrix: RiskMatrix,
+    ) -> List[DangerZone]:
+        """
+        Find all danger zones in the risk matrix.
+        
+        Returns:
+            List of DangerZone objects sorted by severity
+        """
+        danger_zones = []
+        
+        for (seg_type, seg_val, risk_type), cell in risk_matrix._cells.items():
+            if cell.is_danger_zone:
+                severity = cell.risk_percentage * (cell.population_percentage / 100.0)
+                
+                recommendation = DANGER_ZONE_RECOMMENDATIONS.get(
+                    (seg_type.value, seg_val, risk_type.value),
+                    f"Consider intervention for {seg_val} segment regarding {risk_type.name}."
+                )
+                
+                danger_zones.append(DangerZone(
+                    segment_dimension=seg_type.value,
+                    segment_value=seg_val,
+                    risk_name=risk_type.value,
+                    risk_value=cell.risk_percentage,
+                    population_pct=cell.population_percentage,
+                    severity_score=severity,
+                    recommendation=recommendation,
+                ))
+        
+        return sorted(danger_zones, key=lambda dz: dz.severity_score, reverse=True)
+
+
+class FullRiskMapAnalyzer:
+    """
+    Analyzer for complete 6-dimensional risk matrix.
+    
+    Session 10.1: Extends basic risk analysis with full segmentation.
+    """
+    
+    def __init__(
+        self,
+        thresholds: Optional[RiskThresholds] = None,
+        danger_threshold: float = 25.0,
+    ):
+        """
+        Initialize analyzer.
+        
+        Args:
+            thresholds: Risk thresholds for classification
+            danger_threshold: Percentage above which is danger zone
+        """
+        self.thresholds = thresholds or create_default_thresholds()
+        self.classifier = SegmentClassifier()
+        self.danger_detector = DangerZoneDetector(danger_threshold)
+    
+    def analyze(
+        self,
+        population: List[Any],  # List of VirtualPerson
+        individual_results: List[Dict[str, Any]],  # Per-person simulation results
+    ) -> RiskMatrix:
+        """
+        Build complete risk matrix from population results.
+        
+        Args:
+            population: List of VirtualPerson objects
+            individual_results: List of dicts with per-person metrics
+            
+        Returns:
+            RiskMatrix with all 6 segmentations x 6 risk types
+        """
+        matrix = RiskMatrix()
+        matrix.total_population = len(population)
+        
+        # Count individuals and risk occurrences per segment
+        segment_counts: Dict[Tuple[SegmentationType, str], int] = {}
+        risk_counts: Dict[Tuple[SegmentationType, str, RiskType], int] = {}
+        
+        for person, result in zip(population, individual_results):
+            # Classify person across all dimensions
+            classifications = self.classifier.classify_person(person)
+            
+            # Check which risks apply to this person
+            person_risks = self._evaluate_risks(result)
+            
+            # Update counts
+            for seg_type, seg_val in classifications.items():
+                key = (seg_type, seg_val)
+                segment_counts[key] = segment_counts.get(key, 0) + 1
+                
+                for risk_type, has_risk in person_risks.items():
+                    if has_risk:
+                        risk_key = (seg_type, seg_val, risk_type)
+                        risk_counts[risk_key] = risk_counts.get(risk_key, 0) + 1
+        
+        # Store segment counts
+        matrix._segment_counts = segment_counts
+        
+        # Build cells
+        for seg_type in SegmentationType:
+            for seg_val in SEGMENT_VALUES.get(seg_type, []):
+                seg_key = (seg_type, seg_val)
+                seg_count = segment_counts.get(seg_key, 0)
+                
+                pop_pct = (seg_count / matrix.total_population * 100) if matrix.total_population > 0 else 0
+                
+                for risk_type in RiskType:
+                    risk_key = (seg_type, seg_val, risk_type)
+                    risk_count = risk_counts.get(risk_key, 0)
+                    
+                    risk_pct = (risk_count / seg_count * 100) if seg_count > 0 else 0
+                    
+                    cell = RiskMatrixCell(
+                        risk_percentage=risk_pct,
+                        population_percentage=pop_pct,
+                        count=seg_count,
+                        is_danger_zone=self.danger_detector.is_danger_zone(risk_pct),
+                    )
+                    
+                    matrix.add_cell(seg_type, seg_val, risk_type, cell)
+        
+        return matrix
+    
+    def _evaluate_risks(self, result: Dict[str, Any]) -> Dict[RiskType, bool]:
+        """
+        Evaluate which risks apply to an individual result.
+        
+        Args:
+            result: Dict with metrics like glucose_peak, caffeine_at_2200, etc.
+            
+        Returns:
+            Dict mapping RiskType to whether the person has that risk
+        """
+        return {
+            RiskType.HYPERGLYCEMIA: result.get("glucose_peak", 0) > self.thresholds.hyperglycemia_threshold_mg_dl,
+            RiskType.SEVERE_HYPERGLYCEMIA: result.get("glucose_peak", 0) > self.thresholds.severe_hyperglycemia_threshold_mg_dl,
+            RiskType.HYPOGLYCEMIA: result.get("glucose_min", 100) < 70,
+            RiskType.JITTER: result.get("caffeine_peak", 0) > self.thresholds.jitter_caffeine_threshold_mg_l,
+            RiskType.SLEEP_DISRUPTION: result.get("caffeine_at_2200", 0) > self.thresholds.sleep_caffeine_threshold_mg_l,
+            RiskType.CRASH: result.get("alertness_drop_max", 0) > self.thresholds.crash_alertness_drop_pct,
+        }
+
+
+# =============================================================================
+# CONVENIENCE FUNCTIONS
+# =============================================================================
+
+def create_risk_matrix_from_results(
+    population: List[Any],
+    individual_results: List[Dict[str, Any]],
+    thresholds: Optional[RiskThresholds] = None,
+    danger_threshold: float = 25.0,
+) -> RiskMatrix:
+    """
+    Convenience function to create full risk matrix.
+    
+    Args:
+        population: List of VirtualPerson objects
+        individual_results: List of per-person result dicts
+        thresholds: Optional risk thresholds
+        danger_threshold: Threshold for danger zone (default 25%)
+        
+    Returns:
+        Complete RiskMatrix with all segments and risks
+    """
+    analyzer = FullRiskMapAnalyzer(thresholds, danger_threshold)
+    return analyzer.analyze(population, individual_results)
+
+
+def get_top_danger_zones(
+    risk_matrix: RiskMatrix,
+    n: int = 5,
+) -> List[DangerZone]:
+    """
+    Get top N danger zones from risk matrix.
+    
+    Args:
+        risk_matrix: RiskMatrix to analyze
+        n: Number of danger zones to return
+        
+    Returns:
+        List of top N DangerZone objects by severity
+    """
+    detector = DangerZoneDetector()
+    all_zones = detector.find_danger_zones(risk_matrix)
+    return all_zones[:n]
+
+
+def format_risk_map_for_pdf(
+    risk_matrix: RiskMatrix,
+    segmentation: SegmentationType,
+) -> Dict[str, Any]:
+    """
+    Format risk matrix for PDF generation.
+    
+    Args:
+        risk_matrix: RiskMatrix to format
+        segmentation: Which segmentation dimension to display
+        
+    Returns:
+        Dict suitable for PDF table generation
+    """
+    table = risk_matrix.get_table_for_segmentation(segmentation)
+    
+    # Add formatting hints
+    formatted = {
+        "title": f"Risk Analysis by {segmentation.name.replace('_', ' ').title()}",
+        "segments": table["rows"],
+        "risks": table["columns"],
+        "values": table["values"],
+        "danger_threshold": 25.0,
+    }
+    
+    return formatted
+
+
+# =============================================================================
+# BACKWARDS COMPATIBILITY ALIASES
+# =============================================================================
+
+# Alias for test compatibility
+BasicRiskAnalyzer = RiskAnalyzer
