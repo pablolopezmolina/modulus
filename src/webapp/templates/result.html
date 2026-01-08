@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Your Results - {{ product.name }}{% endblock %}
+
+{% block content %}
+<section class="result-hero">
+    <h1>Your Personalized Timing</h1>
+    <p class="product-name">{{ product.name }}</p>
+</section>
+
+<!-- Main Result Card -->
+<section class="result-main">
+    <div class="timing-card">
+        <div class="timing-icon">⏰</div>
+        <div class="timing-content">
+            <span class="timing-label">Take at</span>
+            <span class="timing-value">{{ result.optimal_timing }}</span>
+        </div>
+    </div>
+    
+    {% if result.dosage_multiplier != 1.0 %}
+    <div class="dosage-card">
+        <div class="dosage-icon">📊</div>
+        <div class="dosage-content">
+            <span class="dosage-label">Suggested Dosage</span>
+            <span class="dosage-value">
+                {% if result.dosage_multiplier < 1.0 %}
+                    {{ (result.dosage_multiplier * 100)|round|int }}% of standard serving
+                {% else %}
+                    {{ (result.dosage_multiplier * 100)|round|int }}% of standard serving
+                {% endif %}
+            </span>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Warnings -->
+{% if result.warnings %}
+<section class="warnings-section">
+    <h2>⚠️ Important Notes</h2>
+    <ul class="warnings-list">
+        {% for warning in result.warnings %}
+        <li>{{ warning }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<!-- Expected Effects -->
+<section class="effects-section">
+    <h2>What to Expect</h2>
+    
+    <div class="effects-grid">
+        {% if result.expected_effects.alertness_peak %}
+        <div class="effect-card">
+            <div class="effect-icon">⚡</div>
+            <h3>Peak Effect</h3>
+            <p>{{ result.expected_effects.alertness_peak }}</p>
+        </div>
+        {% endif %}
+        
+        {% if result.expected_effects.duration %}
+        <div class="effect-card">
+            <div class="effect-icon">⏱️</div>
+            <h3>Duration</h3>
+            <p>{{ result.expected_effects.duration }}</p>
+        </div>
+        {% endif %}
+        
+        {% if result.expected_effects.energy_profile %}
+        <div class="effect-card">
+            <div class="effect-icon">📈</div>
+            <h3>Energy Profile</h3>
+            <p>{{ result.expected_effects.energy_profile }}</p>
+        </div>
+        {% endif %}
+        
+        {% if result.expected_effects.sleep_impact %}
+        <div class="effect-card">
+            <div class="effect-icon">🌙</div>
+            <h3>Sleep Impact</h3>
+            <p>{{ result.expected_effects.sleep_impact }}</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Recommendations -->
+{% if result.recommendations %}
+<section class="recommendations-section">
+    <h2>Tips for Best Results</h2>
+    
+    <ul class="recommendations-list">
+        {% for rec in result.recommendations %}
+        <li>{{ rec }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<!-- Serving Instructions -->
+<section class="serving-section">
+    <h2>How to Take</h2>
+    <p class="serving-instructions">{{ product.serving_instructions }}</p>
+</section>
+
+<!-- User Summary -->
+<section class="summary-section">
+    <details class="user-summary">
+        <summary>Your Profile</summary>
+        <ul>
+            <li><strong>Weight:</strong> {{ user.weight_kg }} kg</li>
+            <li><strong>Wake Time:</strong> {{ user.wake_time }}</li>
+            <li><strong>Activity Time:</strong> {{ user.activity_time }}</li>
+            <li><strong>Caffeine Response:</strong> {{ user.caffeine_sensitivity }}</li>
+            {% if user.sleep_target_time %}
+            <li><strong>Bedtime:</strong> {{ user.sleep_target_time }}</li>
+            {% endif %}
+        </ul>
+    </details>
+</section>
+
+<!-- Actions -->
+<section class="actions-section">
+    <a href="/{{ brand.brand_id }}/{{ product.id }}" class="action-btn secondary">
+        ← Adjust Settings
+    </a>
+    <a href="/{{ brand.brand_id }}" class="action-btn primary">
+        Try Another Product
+    </a>
+</section>
+
+<!-- Disclaimer -->
+<section class="disclaimer">
+    <p>
+        <strong>Disclaimer:</strong> These recommendations are based on general research 
+        and your provided information. Individual responses may vary. This is not medical 
+        advice. If you have health conditions or take medications, consult your healthcare 
+        provider before use.
+    </p>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Save result to localStorage for reference
+if (window.localStorage) {
+    const result = {{ result | tojson | safe }};
+    const timestamp = new Date().toISOString();
+    localStorage.setItem('lastResult', JSON.stringify({
+        product: '{{ product.name }}',
+        timing: result.optimal_timing,
+        timestamp: timestamp
+    }));
+}
+</script>
+{% endblock %}

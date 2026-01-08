@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_code }} - {{ brand.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="error-page">
+    <div class="error-content">
+        <div class="error-code">{{ error_code }}</div>
+        <h1>{{ error_message }}</h1>
+        
+        {% if error_code == 404 %}
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        {% else %}
+        <p>Something went wrong on our end. Please try again.</p>
+        {% endif %}
+        
+        <div class="error-actions">
+            <a href="/" class="action-btn primary">
+                Go Home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
