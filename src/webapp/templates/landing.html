@@ -1,49 +1,152 @@
 {% extends "base.html" %}
 
-{% block title %}{{ brand.brand_name }} - Personalized Timing{% endblock %}
+{% block title %}{{ product.name if product else 'Welcome' }} - Personalized for You{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <h1>{{ brand.welcome_message }}</h1>
-    <p class="subtitle">Get personalized supplement timing based on your unique profile</p>
-</section>
-
-<section class="products-section">
-    <h2>Select Your Product</h2>
-    
-    <div class="products-grid">
-        {% for product in products %}
-        <a href="/{{ brand.brand_id }}/{{ product.id }}" class="product-card">
-            <div class="product-icon">⚡</div>
-            <h3>{{ product.name }}</h3>
-            <p>{{ product.description }}</p>
-            <span class="cta">Get My Timing →</span>
+<div class="landing-container">
+    <!-- Hero section -->
+    <section class="hero">
+        <div class="hero-badge animate-fade-in">
+            <span class="badge-icon">✨</span>
+            <span class="badge-text">AI-Powered Personalization</span>
+        </div>
+        
+        <h1 class="hero-title animate-slide-up">
+            Get Your <span class="text-gradient">Perfect</span> Dose
+        </h1>
+        
+        <p class="hero-subtitle animate-slide-up delay-1">
+            {% if product %}
+            Personalized recommendations for <strong>{{ product.name }}</strong> based on your body and lifestyle.
+            {% else %}
+            Personalized supplement recommendations based on your unique physiology.
+            {% endif %}
+        </p>
+        
+        <!-- Product card -->
+        {% if product %}
+        <div class="product-card animate-scale-in delay-2">
+            <div class="product-icon">
+                {% if product.category == 'energy' %}
+                ⚡
+                {% elif product.category == 'focus' %}
+                🎯
+                {% elif product.category == 'recovery' %}
+                💪
+                {% elif product.category == 'sleep' %}
+                🌙
+                {% else %}
+                💊
+                {% endif %}
+            </div>
+            <div class="product-details">
+                <h3 class="product-title">{{ product.name }}</h3>
+                <div class="product-meta">
+                    {% if product.base_caffeine_mg > 0 %}
+                    <span class="meta-item">
+                        <span class="meta-icon">☕</span>
+                        <span class="meta-value">{{ product.base_caffeine_mg }}mg caffeine</span>
+                    </span>
+                    {% endif %}
+                    {% if product.has_theanine %}
+                    <span class="meta-item">
+                        <span class="meta-icon">🍵</span>
+                        <span class="meta-value">+ L-Theanine</span>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- CTA Button -->
+        <a href="/{{ brand.brand_id if brand else 'default' }}/{{ product.product_id if product else 'default' }}/form" class="cta-button animate-slide-up delay-3">
+            <span class="cta-text">Get Personalized</span>
+            <span class="cta-icon">→</span>
         </a>
-        {% endfor %}
-    </div>
-</section>
-
-<section class="how-it-works">
-    <h2>How It Works</h2>
+        
+        <!-- Trust indicators -->
+        <div class="trust-indicators animate-fade-in delay-4">
+            <div class="trust-item">
+                <span class="trust-icon">🔬</span>
+                <span class="trust-text">Science-backed</span>
+            </div>
+            <div class="trust-item">
+                <span class="trust-icon">⚡</span>
+                <span class="trust-text">Instant results</span>
+            </div>
+            <div class="trust-item">
+                <span class="trust-icon">🔒</span>
+                <span class="trust-text">Privacy-first</span>
+            </div>
+        </div>
+    </section>
     
-    <div class="steps">
-        <div class="step">
-            <div class="step-number">1</div>
-            <h3>Tell Us About You</h3>
-            <p>Your weight, activity time, and caffeine sensitivity</p>
-        </div>
+    <!-- How it works section -->
+    <section class="how-it-works">
+        <h2 class="section-title">How It Works</h2>
         
-        <div class="step">
-            <div class="step-number">2</div>
-            <h3>We Calculate</h3>
-            <p>Our algorithm optimizes timing for your body</p>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-icon">📝</div>
+                <h3 class="step-title">Tell Us About You</h3>
+                <p class="step-description">Your weight, wake time, and when you plan to be active.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-icon">🧬</div>
+                <h3 class="step-title">AI Analysis</h3>
+                <p class="step-description">Our metabolic model calculates your optimal protocol.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-icon">✅</div>
+                <h3 class="step-title">Get Results</h3>
+                <p class="step-description">Personalized timing, dosage, and safety warnings.</p>
+            </div>
         </div>
+    </section>
+    
+    <!-- What you'll get section -->
+    <section class="benefits">
+        <h2 class="section-title">What You'll Get</h2>
         
-        <div class="step">
-            <div class="step-number">3</div>
-            <h3>Get Results</h3>
-            <p>Personalized timing and dosage in seconds</p>
+        <div class="benefits-list">
+            <div class="benefit-item">
+                <div class="benefit-icon">⏰</div>
+                <div class="benefit-content">
+                    <h4 class="benefit-title">Optimal Timing</h4>
+                    <p class="benefit-description">Exact time to take your supplement for maximum effect</p>
+                </div>
+            </div>
+            
+            <div class="benefit-item">
+                <div class="benefit-icon">📊</div>
+                <div class="benefit-content">
+                    <h4 class="benefit-title">Dose Adjustment</h4>
+                    <p class="benefit-description">Personalized multiplier based on your body weight</p>
+                </div>
+            </div>
+            
+            <div class="benefit-item">
+                <div class="benefit-icon">⚠️</div>
+                <div class="benefit-content">
+                    <h4 class="benefit-title">Safety Alerts</h4>
+                    <p class="benefit-description">Warnings specific to your profile and timing</p>
+                </div>
+            </div>
+            
+            <div class="benefit-item">
+                <div class="benefit-icon">📈</div>
+                <div class="benefit-content">
+                    <h4 class="benefit-title">Expected Effects</h4>
+                    <p class="benefit-description">What to expect: energy levels, duration, peak time</p>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+</div>
 {% endblock %}

@@ -1,429 +1,462 @@
 """
-MODULUS Consumer Web App - FastAPI Application
+MODULUS - Consumer Web App v1.2
+Session 15-17: FastAPI app with templates, personalization, and analytics
 
-Main web application with API endpoints and template rendering.
+Features:
+- White-label consumer web app for brands
+- Personalization engine
+- Real-time API (<100ms)
+- Analytics dashboard for brand clients
 
-Session 15.1 - FASE 5: Pack 3
-
-Endpoints:
-- GET /{brand_id}/{product_id} - Landing page
-- GET /{brand_id}/{product_id}/form - User input form
-- POST /{brand_id}/{product_id}/personalize - Get personalization
-- GET /{brand_id}/{product_id}/result - Results page
-
-API Endpoints:
-- POST /api/personalize - JSON API for personalization
-- GET /api/products - List available products
-- GET /api/brands - List available brands
+Version History:
+- v1.0: Basic consumer web app
+- v1.1: Fixed routes, added 60 tests
+- v1.2: Added analytics tracking and dashboard
 """
-import os
-from typing import Dict, Any, Optional
-from pathlib import Path
-
 from fastapi import FastAPI, Request, HTTPException, Form
-from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from fastapi.responses import RedirectResponse, Response
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any, List
+from dataclasses import dataclass
+from datetime import datetime
+import os
 
-from .personalization import (
-    PersonalizationEngine,
-    ProductConfig,
-    UserInput,
-    PersonalizationResult
+# Import analytics
+from webapp.analytics import get_analytics_service
+
+# Import personalization (and re-export for test compatibility)
+from webapp.personalization import (
+    PersonalizationEngine, 
+    UserInput, 
+    PersonalizationResult,
+    CaffeineSensitivity
 )
-from .config import (
-    BrandConfig,
-    AppConfig,
-    PRESET_BRANDS,
-    get_brand_config
-)
+
+# Import brand config (and re-export for test compatibility)
+from webapp.config import BrandConfig, get_brand_config, PRESET_BRANDS
 
 
 # =============================================================================
-# APP SETUP
+# Product Config (defined here - re-exported for test compatibility)
+# =============================================================================
+
+@dataclass
+class ProductConfig:
+    """Configuration for a product."""
+    product_id: str
+    name: str
+    caffeine_mg: float = 0
+    has_theanine: bool = False
+    category: str = "general"
+    
+    def model_dump(self) -> Dict[str, Any]:
+        """Convert to dictionary for template rendering."""
+        return {
+            "product_id": self.product_id,
+            "name": self.name,
+            "caffeine_mg": self.caffeine_mg,
+            "has_theanine": self.has_theanine,
+            "category": self.category
+        }
+
+
+# =============================================================================
+# App Configuration
 # =============================================================================
 
 app = FastAPI(
     title="MODULUS Consumer App",
-    description="Personalized supplement timing recommendations",
-    version="1.0.0"
+    description="Personalized supplement timing powered by MODULUS",
+    version="1.2.0"
 )
 
-# Template directory (relative to this file)
-BASE_DIR = Path(__file__).resolve().parent
-TEMPLATES_DIR = BASE_DIR / "templates"
-STATIC_DIR = BASE_DIR / "static"
+# Static files and templates
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
-# Initialize templates
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-
-# Mount static files
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
-# Initialize personalization engine
+# Personalization engine (exported for tests)
 engine = PersonalizationEngine()
 
-# Register some demo products
-DEMO_PRODUCTS = [
-    ProductConfig(
+
+# =============================================================================
+# Demo Data
+# =============================================================================
+
+DEMO_PRODUCTS = {
+    "energy_pro": ProductConfig(
         product_id="energy_pro",
         name="Energy Pro",
-        caffeine_mg=200,
-        has_theanine=True,
-        other_stimulants_mg=25,
-        serving_instructions="Mix 1 scoop with 8-12 oz water",
-        description="Premium pre-workout with balanced energy"
-    ),
-    ProductConfig(
-        product_id="pure_focus",
-        name="Pure Focus",
         caffeine_mg=150,
         has_theanine=True,
-        other_stimulants_mg=0,
-        serving_instructions="Take 2 capsules with water",
-        description="Clean energy for mental clarity"
+        category="pre_workout"
     ),
-    ProductConfig(
-        product_id="max_energy",
-        name="Max Energy",
-        caffeine_mg=300,
-        has_theanine=False,
-        other_stimulants_mg=100,
-        serving_instructions="Mix 1 scoop. Do not exceed 1 serving per day.",
-        description="High-stim formula for intense workouts",
-        warnings=["Contains high caffeine", "Not for caffeine-sensitive individuals"]
-    ),
-    ProductConfig(
-        product_id="gentle_boost",
-        name="Gentle Boost",
-        caffeine_mg=75,
+    "focus_max": ProductConfig(
+        product_id="focus_max",
+        name="Focus Max",
+        caffeine_mg=100,
         has_theanine=True,
-        other_stimulants_mg=0,
-        serving_instructions="Mix 1 scoop or take 1 capsule",
-        description="Mild energy for beginners or sensitive users"
+        category="cognitive"
+    ),
+    "endurance_plus": ProductConfig(
+        product_id="endurance_plus",
+        name="Endurance Plus",
+        caffeine_mg=200,
+        has_theanine=False,
+        category="endurance"
+    ),
+    "sleep_well": ProductConfig(
+        product_id="sleep_well",
+        name="Sleep Well",
+        caffeine_mg=0,
+        has_theanine=True,
+        category="sleep"
+    ),
+    "morning_boost": ProductConfig(
+        product_id="morning_boost",
+        name="Morning Boost",
+        caffeine_mg=80,
+        has_theanine=False,
+        category="energy"
     )
-]
+}
 
-for product in DEMO_PRODUCTS:
-    engine.register_product(product)
+# Map brands to their products
+BRAND_PRODUCTS = {
+    "energyx": ["energy_pro", "endurance_plus", "morning_boost"],
+    "modulus": ["energy_pro", "focus_max", "sleep_well"],
+    "vitaboost": ["sleep_well", "morning_boost"],
+    "peakform": ["endurance_plus", "energy_pro"]
+}
 
 
 # =============================================================================
-# PYDANTIC MODELS
+# Pydantic Models
 # =============================================================================
 
-class PersonalizeRequest(BaseModel):
-    """Request body for personalization API."""
+class PersonalizationRequest(BaseModel):
+    """API request for personalization."""
     product_id: str
-    weight_kg: float
-    wake_time: str
-    activity_time: str
-    caffeine_sensitivity: str = "normal"
-    age: Optional[int] = None
-    has_eaten: Optional[bool] = None
-    sleep_target_time: Optional[str] = None
+    weight_kg: float = Field(ge=30, le=200)
+    caffeine_sensitivity: str = Field(pattern="^(slow|normal|fast)$")
+    activity_time: str = Field(pattern="^[0-2][0-9]:[0-5][0-9]$")
+    wake_time: Optional[str] = Field(default="07:00", pattern="^[0-2][0-9]:[0-5][0-9]$")
+    sleep_time: Optional[str] = Field(default="23:00", pattern="^[0-2][0-9]:[0-5][0-9]$")
 
 
-class PersonalizeResponse(BaseModel):
-    """Response body for personalization API."""
+class PersonalizationResponse(BaseModel):
+    """API response for personalization."""
+    product_id: str
     optimal_timing: str
     dosage_multiplier: float
-    warnings: list
-    expected_effects: dict
-    recommendations: list
-    product_name: str
-    serving_instructions: str
+    expected_effect: Dict[str, Any]
+    warnings: List[str]
+    response_time_ms: float
+
+
+class TrackEventRequest(BaseModel):
+    """API request for tracking events."""
+    event_type: str
+    brand_id: str
+    product_id: str
+    data: Dict[str, Any] = {}
 
 
 # =============================================================================
-# HELPER FUNCTIONS
+# Health Check
 # =============================================================================
 
-def get_brand_or_404(brand_id: str) -> BrandConfig:
-    """Get brand config or raise 404."""
-    if brand_id not in PRESET_BRANDS:
-        raise HTTPException(status_code=404, detail=f"Brand not found: {brand_id}")
-    return get_brand_config(brand_id)
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 
-def get_product_or_404(product_id: str) -> ProductConfig:
-    """Get product config or raise 404."""
-    try:
-        return engine.get_product(product_id)
-    except KeyError:
-        raise HTTPException(status_code=404, detail=f"Product not found: {product_id}")
+# =============================================================================
+# API Routes (BEFORE wildcard routes)
+# =============================================================================
 
-
-def build_context(
-    request: Request,
-    brand: BrandConfig,
-    product: ProductConfig,
-    **extras
-) -> Dict[str, Any]:
-    """Build template context with common data."""
+@app.get("/api/products")
+async def list_products():
+    """List all available products."""
     return {
-        "request": request,
-        "brand": brand.to_dict(),
-        "product": {
-            "id": product.product_id,
-            "name": product.name,
-            "description": product.description,
-            "caffeine_mg": product.caffeine_mg,
-            "has_theanine": product.has_theanine,
-            "serving_instructions": product.serving_instructions
-        },
-        "css_vars": brand.to_css_vars(),
-        **extras
+        "products": [
+            {"id": k, "name": v.name, "category": v.category}
+            for k, v in DEMO_PRODUCTS.items()
+        ]
     }
 
 
+@app.get("/api/brands")
+async def list_brands():
+    """List all available brands."""
+    return {
+        "brands": [
+            {
+                "id": brand_id, 
+                "name": get_brand_config(brand_id).brand_name, 
+                "products": BRAND_PRODUCTS.get(brand_id, [])
+            }
+            for brand_id in PRESET_BRANDS.keys()
+        ]
+    }
+
+
+@app.post("/api/personalize")
+async def api_personalize(request: PersonalizationRequest):
+    """
+    Personalize product timing via API.
+    Target: <100ms response time
+    """
+    import time
+    start = time.time()
+    
+    product = DEMO_PRODUCTS.get(request.product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail=f"Product '{request.product_id}' not found")
+    
+    user_input = UserInput(
+        weight_kg=request.weight_kg,
+        caffeine_sensitivity=request.caffeine_sensitivity,
+        activity_time=request.activity_time,
+        wake_time=request.wake_time or "07:00",
+        sleep_time=request.sleep_time or "23:00"
+    )
+    
+    result = engine.personalize(user_input, product)
+    elapsed = (time.time() - start) * 1000
+    
+    # Track analytics
+    service = get_analytics_service()
+    service.track_personalization(
+        brand_id="api",
+        product_id=request.product_id,
+        user_data={
+            "weight_kg": request.weight_kg,
+            "caffeine_sensitivity": request.caffeine_sensitivity,
+            "activity_time": request.activity_time
+        },
+        result={
+            "optimal_timing": result.optimal_timing,
+            "response_time_ms": elapsed
+        }
+    )
+    
+    return PersonalizationResponse(
+        product_id=request.product_id,
+        optimal_timing=result.optimal_timing,
+        dosage_multiplier=result.dosage_multiplier,
+        expected_effect=result.expected_effect,
+        warnings=result.warnings,
+        response_time_ms=round(elapsed, 2)
+    )
+
+
 # =============================================================================
-# WEB ROUTES (HTML)
+# Analytics API Routes
 # =============================================================================
 
-@app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    """Root redirect to default brand."""
-    return templates.TemplateResponse(
-        "landing.html",
-        {
-            "request": request,
-            "brand": PRESET_BRANDS["modulus"].to_dict(),
-            "css_vars": PRESET_BRANDS["modulus"].to_css_vars(),
-            "products": [
-                {"id": p.product_id, "name": p.name, "description": p.description}
-                for p in DEMO_PRODUCTS
-            ]
+@app.get("/api/analytics/dashboard")
+async def get_analytics_dashboard(brand_id: Optional[str] = None):
+    """Get analytics dashboard summary."""
+    service = get_analytics_service()
+    summary = service.get_dashboard_summary(brand_id=brand_id)
+    return summary
+
+
+@app.post("/api/analytics/track")
+async def track_analytics_event(request: TrackEventRequest):
+    """Track an analytics event."""
+    service = get_analytics_service()
+    
+    if request.event_type == "page_view":
+        service.track_page_view(
+            request.brand_id, 
+            request.product_id, 
+            request.data.get("page", "unknown")
+        )
+    elif request.event_type == "form_start":
+        service.track_form_start(request.brand_id, request.product_id)
+    elif request.event_type == "personalization":
+        service.track_personalization(
+            request.brand_id, 
+            request.product_id,
+            request.data.get("user_data", {}),
+            request.data.get("result", {})
+        )
+    
+    return {"status": "ok", "event_type": request.event_type}
+
+
+@app.get("/api/analytics/export")
+async def export_analytics(
+    brand_id: Optional[str] = None,
+    include_events: bool = False
+):
+    """Export analytics data as JSON."""
+    service = get_analytics_service()
+    json_data = service.export_to_json(
+        brand_id=brand_id,
+        include_events=include_events
+    )
+    return Response(
+        content=json_data,
+        media_type="application/json",
+        headers={
+            "Content-Disposition": f"attachment; filename=modulus-analytics-{brand_id or 'all'}.json"
         }
     )
 
 
-@app.get("/{brand_id}", response_class=HTMLResponse)
-async def brand_landing(request: Request, brand_id: str):
-    """Brand-specific landing page."""
-    brand = get_brand_or_404(brand_id)
+# =============================================================================
+# Web Routes
+# =============================================================================
+
+@app.get("/")
+async def root():
+    """Redirect root to demo brand."""
+    return RedirectResponse(url="/energyx/energy_pro")
+
+
+@app.get("/{brand_id}/dashboard")
+async def dashboard_page(request: Request, brand_id: str):
+    """Analytics dashboard page for brand owners."""
+    brand_config = get_brand_config(brand_id)
+    if brand_id not in PRESET_BRANDS:
+        raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found")
+    
+    service = get_analytics_service()
+    summary = service.get_dashboard_summary(brand_id=brand_id)
     
     return templates.TemplateResponse(
-        "landing.html",
-        {
-            "request": request,
-            "brand": brand.to_dict(),
-            "css_vars": brand.to_css_vars(),
-            "products": [
-                {"id": p.product_id, "name": p.name, "description": p.description}
-                for p in DEMO_PRODUCTS
-            ]
+        request=request,
+        name="dashboard.html",
+        context={
+            "brand": {
+                "id": brand_id,
+                "name": brand_config.brand_name,
+                "primary_color": brand_config.primary_color,
+                "secondary_color": brand_config.secondary_color
+            },
+            "summary": summary
         }
     )
 
 
-@app.get("/{brand_id}/{product_id}", response_class=HTMLResponse)
-async def product_page(request: Request, brand_id: str, product_id: str):
-    """Product-specific landing page with form."""
-    brand = get_brand_or_404(brand_id)
-    product = get_product_or_404(product_id)
+@app.get("/{brand_id}/{product_id}")
+async def landing_page(request: Request, brand_id: str, product_id: str):
+    """Product landing page."""
+    brand_config = get_brand_config(brand_id)
+    if brand_id not in PRESET_BRANDS:
+        raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found")
+    
+    product = DEMO_PRODUCTS.get(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail=f"Product '{product_id}' not found")
+    
+    # Track page view
+    service = get_analytics_service()
+    service.track_page_view(brand_id, product_id, "landing")
     
     return templates.TemplateResponse(
-        "form.html",
-        build_context(request, brand, product)
+        request=request,
+        name="landing.html",
+        context={
+            "brand": brand_config.to_dict(),
+            "product": product.model_dump()
+        }
     )
 
 
-@app.post("/{brand_id}/{product_id}/result", response_class=HTMLResponse)
-async def show_result(
+@app.get("/{brand_id}/{product_id}/form")
+async def form_page(request: Request, brand_id: str, product_id: str):
+    """Personalization form page."""
+    brand_config = get_brand_config(brand_id)
+    if brand_id not in PRESET_BRANDS:
+        raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found")
+    
+    product = DEMO_PRODUCTS.get(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail=f"Product '{product_id}' not found")
+    
+    # Track page view and form start
+    service = get_analytics_service()
+    service.track_page_view(brand_id, product_id, "form")
+    service.track_form_start(brand_id, product_id)
+    
+    return templates.TemplateResponse(
+        request=request,
+        name="form.html",
+        context={
+            "brand": brand_config.to_dict(),
+            "product": product.model_dump()
+        }
+    )
+
+
+@app.post("/{brand_id}/{product_id}/result")
+async def result_page(
     request: Request,
     brand_id: str,
     product_id: str,
     weight_kg: float = Form(...),
-    wake_time: str = Form(...),
+    caffeine_sensitivity: str = Form(...),
     activity_time: str = Form(...),
-    caffeine_sensitivity: str = Form("normal"),
-    has_eaten: bool = Form(False),
-    sleep_target_time: str = Form(None)
+    wake_time: str = Form(default="07:00"),
+    sleep_time: str = Form(default="23:00")
 ):
-    """Show personalization results (form submission)."""
-    brand = get_brand_or_404(brand_id)
-    product = get_product_or_404(product_id)
+    """Personalization result page."""
+    import time
+    start = time.time()
     
-    # Create user input
-    try:
-        user = UserInput(
-            weight_kg=weight_kg,
-            wake_time=wake_time,
-            activity_time=activity_time,
-            caffeine_sensitivity=caffeine_sensitivity,
-            has_eaten=has_eaten if has_eaten else None,
-            sleep_target_time=sleep_target_time if sleep_target_time else None
-        )
-    except ValueError as e:
-        return templates.TemplateResponse(
-            "form.html",
-            build_context(request, brand, product, error=str(e))
-        )
+    brand_config = get_brand_config(brand_id)
+    if brand_id not in PRESET_BRANDS:
+        raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found")
     
-    # Get personalization
-    result = engine.personalize(product_id, user)
+    product = DEMO_PRODUCTS.get(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail=f"Product '{product_id}' not found")
     
-    return templates.TemplateResponse(
-        "result.html",
-        build_context(
-            request, 
-            brand, 
-            product,
-            result=result.to_dict(),
-            user=user.to_dict()
-        )
+    user_input = UserInput(
+        weight_kg=weight_kg,
+        caffeine_sensitivity=caffeine_sensitivity,
+        activity_time=activity_time,
+        wake_time=wake_time,
+        sleep_time=sleep_time
     )
-
-
-# =============================================================================
-# API ROUTES (JSON)
-# =============================================================================
-
-@app.post("/api/personalize", response_model=PersonalizeResponse)
-async def api_personalize(req: PersonalizeRequest):
-    """
-    JSON API for personalization.
     
-    Fast endpoint (<100ms) for programmatic access.
-    """
-    # Validate product exists
-    try:
-        product = engine.get_product(req.product_id)
-    except KeyError:
-        raise HTTPException(status_code=404, detail=f"Product not found: {req.product_id}")
+    result = engine.personalize(user_input, product)
+    elapsed = (time.time() - start) * 1000
     
-    # Create user input
-    try:
-        user = UserInput(
-            weight_kg=req.weight_kg,
-            wake_time=req.wake_time,
-            activity_time=req.activity_time,
-            caffeine_sensitivity=req.caffeine_sensitivity,
-            age=req.age,
-            has_eaten=req.has_eaten,
-            sleep_target_time=req.sleep_target_time
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-    # Get personalization
-    result = engine.personalize(req.product_id, user)
-    
-    return PersonalizeResponse(
-        optimal_timing=result.optimal_timing,
-        dosage_multiplier=result.dosage_multiplier,
-        warnings=result.warnings,
-        expected_effects=result.expected_effects,
-        recommendations=result.recommendations,
-        product_name=product.name,
-        serving_instructions=product.serving_instructions
-    )
-
-
-@app.get("/api/products")
-async def api_list_products():
-    """List all available products."""
-    products = []
-    for product_id in engine.list_products():
-        try:
-            p = engine.get_product(product_id)
-            products.append({
-                "id": p.product_id,
-                "name": p.name,
-                "description": p.description,
-                "caffeine_mg": p.caffeine_mg,
-                "has_theanine": p.has_theanine
-            })
-        except KeyError:
-            pass
-    
-    return {"products": products}
-
-
-@app.get("/api/brands")
-async def api_list_brands():
-    """List all available brands."""
-    brands = [
-        {"id": b.brand_id, "name": b.brand_name, "tagline": b.tagline}
-        for b in PRESET_BRANDS.values()
-    ]
-    return {"brands": brands}
-
-
-@app.get("/api/health")
-async def health_check():
-    """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "version": "1.0.0",
-        "products_loaded": len(engine.list_products()),
-        "brands_loaded": len(PRESET_BRANDS)
-    }
-
-
-# =============================================================================
-# ERROR HANDLERS
-# =============================================================================
-
-@app.exception_handler(404)
-async def not_found_handler(request: Request, exc: HTTPException):
-    """Custom 404 handler."""
-    if request.url.path.startswith("/api/"):
-        return JSONResponse(
-            status_code=404,
-            content={"error": "Not found", "detail": str(exc.detail)}
-        )
-    
-    return templates.TemplateResponse(
-        "error.html",
-        {
-            "request": request,
-            "brand": PRESET_BRANDS["modulus"].to_dict(),
-            "css_vars": PRESET_BRANDS["modulus"].to_css_vars(),
-            "error_code": 404,
-            "error_message": "Page not found"
+    # Track personalization
+    service = get_analytics_service()
+    service.track_personalization(
+        brand_id=brand_id,
+        product_id=product_id,
+        user_data={
+            "weight_kg": weight_kg,
+            "caffeine_sensitivity": caffeine_sensitivity,
+            "activity_time": activity_time,
+            "wake_time": wake_time,
+            "sleep_time": sleep_time
         },
-        status_code=404
+        result={
+            "optimal_timing": result.optimal_timing,
+            "dosage_multiplier": result.dosage_multiplier,
+            "response_time_ms": elapsed
+        }
     )
-
-
-@app.exception_handler(500)
-async def server_error_handler(request: Request, exc: Exception):
-    """Custom 500 handler."""
-    if request.url.path.startswith("/api/"):
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Internal server error"}
-        )
     
     return templates.TemplateResponse(
-        "error.html",
-        {
-            "request": request,
-            "brand": PRESET_BRANDS["modulus"].to_dict(),
-            "css_vars": PRESET_BRANDS["modulus"].to_css_vars(),
-            "error_code": 500,
-            "error_message": "Something went wrong"
-        },
-        status_code=500
+        request=request,
+        name="result.html",
+        context={
+            "brand": brand_config.to_dict(),
+            "product": product.model_dump(),
+            "user_input": user_input.model_dump(),
+            "result": result.model_dump(),
+            "response_time_ms": round(elapsed, 2)
+        }
     )
-
-
-# =============================================================================
-# STARTUP
-# =============================================================================
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize app on startup."""
-    print(f"🚀 MODULUS Consumer App starting...")
-    print(f"   Products loaded: {len(engine.list_products())}")
-    print(f"   Brands loaded: {len(PRESET_BRANDS)}")
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)

@@ -1,158 +1,219 @@
 {% extends "base.html" %}
 
-{% block title %}Your Results - {{ product.name }}{% endblock %}
+{% block title %}Your Results - {{ product.name if product else 'Personalized Protocol' }}{% endblock %}
 
 {% block content %}
-<section class="result-hero">
-    <h1>Your Personalized Timing</h1>
-    <p class="product-name">{{ product.name }}</p>
-</section>
-
-<!-- Main Result Card -->
-<section class="result-main">
-    <div class="timing-card">
-        <div class="timing-icon">⏰</div>
-        <div class="timing-content">
-            <span class="timing-label">Take at</span>
-            <span class="timing-value">{{ result.optimal_timing }}</span>
+<div class="results-container">
+    <!-- Progress indicator -->
+    <div class="progress-bar">
+        <div class="progress-step completed">
+            <span class="step-dot">✓</span>
+            <span class="step-label">Your Info</span>
+        </div>
+        <div class="progress-line completed"></div>
+        <div class="progress-step active">
+            <span class="step-dot"></span>
+            <span class="step-label">Results</span>
         </div>
     </div>
     
-    {% if result.dosage_multiplier != 1.0 %}
-    <div class="dosage-card">
-        <div class="dosage-icon">📊</div>
-        <div class="dosage-content">
-            <span class="dosage-label">Suggested Dosage</span>
-            <span class="dosage-value">
-                {% if result.dosage_multiplier < 1.0 %}
-                    {{ (result.dosage_multiplier * 100)|round|int }}% of standard serving
-                {% else %}
-                    {{ (result.dosage_multiplier * 100)|round|int }}% of standard serving
-                {% endif %}
-            </span>
+    <!-- Results header -->
+    <div class="results-header animate-fade-in">
+        <div class="success-icon animate-scale-in">✨</div>
+        <h1 class="results-title">Your Personalized Protocol</h1>
+        <p class="results-subtitle">Based on your profile, here's how to get the most from <strong>{{ product.name if product else 'your supplement' }}</strong>.</p>
+    </div>
+    
+    <!-- Main result cards -->
+    <div class="results-grid">
+        <!-- Optimal timing card -->
+        <div class="result-card primary animate-slide-up delay-1">
+            <div class="card-header">
+                <span class="card-icon">⏰</span>
+                <h3 class="card-title">Optimal Timing</h3>
+            </div>
+            <div class="card-body">
+                <div class="big-value">
+                    <span class="time-value">{{ result.optimal_timing if result else '17:15' }}</span>
+                </div>
+                <p class="card-description">
+                    Take your supplement at this time for peak effect during your activity.
+                </p>
+            </div>
+            <div class="card-badge">
+                <span class="badge-text">Recommended</span>
+            </div>
+        </div>
+        
+        <!-- Dosage card -->
+        <div class="result-card animate-slide-up delay-2">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h3 class="card-title">Dose Adjustment</h3>
+            </div>
+            <div class="card-body">
+                <div class="big-value">
+                    <span class="dose-value">{{ "%.1f"|format(result.dosage_multiplier) if result else '1.0' }}x</span>
+                    <span class="dose-label">serving</span>
+                </div>
+                <p class="card-description">
+                    {% if result and result.dosage_multiplier != 1.0 %}
+                        {% if result.dosage_multiplier > 1.0 %}
+                        Based on your weight, consider a slightly higher dose.
+                        {% else %}
+                        Based on your weight and sensitivity, consider a lower dose.
+                        {% endif %}
+                    {% else %}
+                    Standard serving is appropriate for your profile.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expected effects -->
+    {% if result and result.expected_effects %}
+    <div class="effects-section animate-slide-up delay-3">
+        <h2 class="section-title">What to Expect</h2>
+        <div class="effects-grid">
+            {% if result.expected_effects.get('peak_alertness') %}
+            <div class="effect-item">
+                <div class="effect-icon">⚡</div>
+                <div class="effect-content">
+                    <span class="effect-label">Peak Energy</span>
+                    <span class="effect-value">{{ result.expected_effects.peak_alertness }}%</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if result.expected_effects.get('duration_hours') %}
+            <div class="effect-item">
+                <div class="effect-icon">⏱️</div>
+                <div class="effect-content">
+                    <span class="effect-label">Duration</span>
+                    <span class="effect-value">~{{ result.expected_effects.duration_hours }}h</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if result.expected_effects.get('time_to_peak_min') %}
+            <div class="effect-item">
+                <div class="effect-icon">📈</div>
+                <div class="effect-content">
+                    <span class="effect-label">Time to Peak</span>
+                    <span class="effect-value">~{{ result.expected_effects.time_to_peak_min }} min</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if result.expected_effects.get('sleep_impact') %}
+            <div class="effect-item">
+                <div class="effect-icon">🌙</div>
+                <div class="effect-content">
+                    <span class="effect-label">Sleep Impact</span>
+                    <span class="effect-value">{{ result.expected_effects.sleep_impact }}</span>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
     {% endif %}
-</section>
-
-<!-- Warnings -->
-{% if result.warnings %}
-<section class="warnings-section">
-    <h2>⚠️ Important Notes</h2>
-    <ul class="warnings-list">
-        {% for warning in result.warnings %}
-        <li>{{ warning }}</li>
-        {% endfor %}
-    </ul>
-</section>
-{% endif %}
-
-<!-- Expected Effects -->
-<section class="effects-section">
-    <h2>What to Expect</h2>
     
-    <div class="effects-grid">
-        {% if result.expected_effects.alertness_peak %}
-        <div class="effect-card">
-            <div class="effect-icon">⚡</div>
-            <h3>Peak Effect</h3>
-            <p>{{ result.expected_effects.alertness_peak }}</p>
+    <!-- Warnings section -->
+    {% if result and result.warnings and result.warnings|length > 0 %}
+    <div class="warnings-section animate-slide-up delay-4">
+        <h2 class="section-title warning-title">
+            <span class="warning-icon">⚠️</span>
+            Important Notes
+        </h2>
+        <div class="warnings-list">
+            {% for warning in result.warnings %}
+            <div class="warning-item">
+                <span class="warning-bullet">!</span>
+                <span class="warning-text">{{ warning }}</span>
+            </div>
+            {% endfor %}
         </div>
-        {% endif %}
-        
-        {% if result.expected_effects.duration %}
-        <div class="effect-card">
-            <div class="effect-icon">⏱️</div>
-            <h3>Duration</h3>
-            <p>{{ result.expected_effects.duration }}</p>
-        </div>
-        {% endif %}
-        
-        {% if result.expected_effects.energy_profile %}
-        <div class="effect-card">
-            <div class="effect-icon">📈</div>
-            <h3>Energy Profile</h3>
-            <p>{{ result.expected_effects.energy_profile }}</p>
-        </div>
-        {% endif %}
-        
-        {% if result.expected_effects.sleep_impact %}
-        <div class="effect-card">
-            <div class="effect-icon">🌙</div>
-            <h3>Sleep Impact</h3>
-            <p>{{ result.expected_effects.sleep_impact }}</p>
-        </div>
-        {% endif %}
     </div>
-</section>
-
-<!-- Recommendations -->
-{% if result.recommendations %}
-<section class="recommendations-section">
-    <h2>Tips for Best Results</h2>
+    {% endif %}
     
-    <ul class="recommendations-list">
-        {% for rec in result.recommendations %}
-        <li>{{ rec }}</li>
-        {% endfor %}
-    </ul>
-</section>
-{% endif %}
-
-<!-- Serving Instructions -->
-<section class="serving-section">
-    <h2>How to Take</h2>
-    <p class="serving-instructions">{{ product.serving_instructions }}</p>
-</section>
-
-<!-- User Summary -->
-<section class="summary-section">
-    <details class="user-summary">
-        <summary>Your Profile</summary>
-        <ul>
-            <li><strong>Weight:</strong> {{ user.weight_kg }} kg</li>
-            <li><strong>Wake Time:</strong> {{ user.wake_time }}</li>
-            <li><strong>Activity Time:</strong> {{ user.activity_time }}</li>
-            <li><strong>Caffeine Response:</strong> {{ user.caffeine_sensitivity }}</li>
-            {% if user.sleep_target_time %}
-            <li><strong>Bedtime:</strong> {{ user.sleep_target_time }}</li>
-            {% endif %}
-        </ul>
-    </details>
-</section>
-
-<!-- Actions -->
-<section class="actions-section">
-    <a href="/{{ brand.brand_id }}/{{ product.id }}" class="action-btn secondary">
-        ← Adjust Settings
-    </a>
-    <a href="/{{ brand.brand_id }}" class="action-btn primary">
-        Try Another Product
-    </a>
-</section>
-
-<!-- Disclaimer -->
-<section class="disclaimer">
-    <p>
-        <strong>Disclaimer:</strong> These recommendations are based on general research 
-        and your provided information. Individual responses may vary. This is not medical 
-        advice. If you have health conditions or take medications, consult your healthcare 
-        provider before use.
-    </p>
-</section>
+    <!-- Benefits section -->
+    {% if result and result.benefits and result.benefits|length > 0 %}
+    <div class="benefits-section animate-slide-up delay-5">
+        <h2 class="section-title">Benefits for You</h2>
+        <div class="benefits-chips">
+            {% for benefit in result.benefits %}
+            <span class="benefit-chip">
+                <span class="chip-icon">✓</span>
+                <span class="chip-text">{{ benefit }}</span>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Quick reference card -->
+    <div class="summary-card animate-slide-up delay-6">
+        <div class="summary-header">
+            <span class="summary-icon">📋</span>
+            <h3 class="summary-title">Quick Reference</h3>
+        </div>
+        <div class="summary-body">
+            <div class="summary-row">
+                <span class="summary-label">Product</span>
+                <span class="summary-value">{{ product.name if product else 'N/A' }}</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Take at</span>
+                <span class="summary-value highlight">{{ result.optimal_timing if result else '17:15' }}</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Dose</span>
+                <span class="summary-value">{{ "%.1f"|format(result.dosage_multiplier) if result else '1.0' }}x serving</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Your weight</span>
+                <span class="summary-value">{{ user_input.weight_kg if user_input else 'N/A' }} kg</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Activity time</span>
+                <span class="summary-value">{{ user_input.activity_time if user_input else 'N/A' }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action buttons -->
+    <div class="action-buttons animate-slide-up delay-7">
+        <a href="/{{ brand.brand_id if brand else 'default' }}/{{ product.product_id if product else 'default' }}/form" class="action-button secondary">
+            <span class="btn-icon">↻</span>
+            <span class="btn-text">Recalculate</span>
+        </a>
+        <button type="button" class="action-button primary" onclick="ModulusApp.shareResults()">
+            <span class="btn-icon">📤</span>
+            <span class="btn-text">Share Results</span>
+        </button>
+    </div>
+    
+    <!-- Disclaimer -->
+    <div class="disclaimer animate-fade-in delay-8">
+        <p>
+            <strong>Disclaimer:</strong> These recommendations are generated by a metabolic simulation model and are for informational purposes only. 
+            Always consult with a healthcare professional before starting any supplement regimen. 
+            Individual results may vary based on factors not captured in this analysis.
+        </p>
+    </div>
+</div>
 {% endblock %}
 
-{% block extra_scripts %}
+{% block scripts %}
 <script>
-// Save result to localStorage for reference
-if (window.localStorage) {
-    const result = {{ result | tojson | safe }};
-    const timestamp = new Date().toISOString();
-    localStorage.setItem('lastResult', JSON.stringify({
-        product: '{{ product.name }}',
-        timing: result.optimal_timing,
-        timestamp: timestamp
-    }));
-}
+document.addEventListener('DOMContentLoaded', function() {
+    // Store results for sharing
+    window.personalizationResults = {
+        product: '{{ product.name if product else "Unknown" }}',
+        timing: '{{ result.optimal_timing if result else "N/A" }}',
+        dosage: '{{ "%.1f"|format(result.dosage_multiplier) if result else "1.0" }}'
+    };
+});
 </script>
 {% endblock %}

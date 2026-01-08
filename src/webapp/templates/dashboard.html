@@ -1,0 +1,609 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    /* Dashboard-specific styles */
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--color-text);
+    }
+    
+    .dashboard-subtitle {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+    }
+    
+    .refresh-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    
+    .refresh-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Metric Cards */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background: var(--color-surface);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--color-border);
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        line-height: 1;
+    }
+    
+    .metric-value.small {
+        font-size: 1.75rem;
+    }
+    
+    .metric-change {
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .metric-change.positive {
+        color: #10b981;
+    }
+    
+    .metric-change.negative {
+        color: #ef4444;
+    }
+    
+    /* Chart Sections */
+    .charts-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .chart-card {
+        background: var(--color-surface);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--color-border);
+    }
+    
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin-bottom: 1rem;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 250px;
+    }
+    
+    /* Popular Products Table */
+    .products-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .products-table th,
+    .products-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .products-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .products-table tbody tr:hover {
+        background: var(--color-background);
+    }
+    
+    .product-rank {
+        width: 40px;
+        text-align: center;
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+    
+    .product-bar {
+        height: 8px;
+        background: var(--color-primary);
+        border-radius: 4px;
+        min-width: 20px;
+    }
+    
+    /* Distribution Cards */
+    .distribution-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .distribution-item {
+        text-align: center;
+        padding: 1rem;
+        background: var(--color-background);
+        border-radius: 8px;
+    }
+    
+    .distribution-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+    
+    .distribution-label {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+        text-transform: capitalize;
+    }
+    
+    /* Export Section */
+    .export-section {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-border);
+    }
+    
+    .export-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: transparent;
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .export-btn:hover {
+        background: var(--color-background);
+        border-color: var(--color-primary);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--color-text-muted);
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 1rem;
+        }
+        
+        .charts-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title">📊 Analytics Dashboard</h1>
+            <p class="dashboard-subtitle">
+                {{ brand.name }} • Last updated: <span id="last-updated">{{ summary.generated_at[:19] }}</span>
+            </p>
+        </div>
+        <button class="refresh-btn" onclick="refreshDashboard()">
+            <span>🔄</span>
+            <span>Refresh</span>
+        </button>
+    </div>
+    
+    <!-- Key Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Total Personalizations</div>
+            <div class="metric-value" id="metric-personalizations">{{ summary.total_personalizations }}</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-label">Page Views</div>
+            <div class="metric-value" id="metric-pageviews">{{ summary.total_page_views }}</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-label">Conversion Rate</div>
+            <div class="metric-value small" id="metric-conversion">{{ summary.conversion_rate }}%</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-label">Avg Response Time</div>
+            <div class="metric-value small" id="metric-response">{{ summary.avg_response_time }}ms</div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="charts-row">
+        <!-- Weekly Trend -->
+        <div class="chart-card">
+            <h3 class="chart-title">📈 Weekly Trend</h3>
+            <div class="chart-container">
+                <canvas id="weeklyTrendChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Caffeine Sensitivity Distribution -->
+        <div class="chart-card">
+            <h3 class="chart-title">☕ Caffeine Sensitivity</h3>
+            <div class="chart-container">
+                <canvas id="caffeineChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="charts-row">
+        <!-- Activity Time Distribution -->
+        <div class="chart-card">
+            <h3 class="chart-title">⏰ Activity Time Distribution</h3>
+            <div class="chart-container">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Popular Products -->
+        <div class="chart-card">
+            <h3 class="chart-title">🏆 Top Products</h3>
+            {% if summary.popular_products %}
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Product</th>
+                        <th>Count</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="products-table-body">
+                    {% set max_count = summary.popular_products[0].count if summary.popular_products else 1 %}
+                    {% for product in summary.popular_products %}
+                    <tr>
+                        <td class="product-rank">{{ loop.index }}</td>
+                        <td>{{ product.product_id }}</td>
+                        <td>{{ product.count }}</td>
+                        <td>
+                            <div class="product-bar" style="width: {{ (product.count / max_count * 100)|round }}%"></div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📦</div>
+                <p>No product data yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Caffeine Distribution Detail -->
+    <div class="chart-card" style="margin-bottom: 2rem;">
+        <h3 class="chart-title">☕ Caffeine Sensitivity Breakdown</h3>
+        <div class="distribution-grid" id="caffeine-distribution">
+            {% for sensitivity, count in summary.caffeine_distribution.items() %}
+            <div class="distribution-item">
+                <div class="distribution-value">{{ count }}</div>
+                <div class="distribution-label">{{ sensitivity }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Export Section -->
+    <div class="export-section">
+        <button class="export-btn" onclick="exportJSON()">
+            <span>📄</span>
+            <span>Export JSON</span>
+        </button>
+        <button class="export-btn" onclick="exportCSV()">
+            <span>📊</span>
+            <span>Export CSV</span>
+        </button>
+    </div>
+</div>
+
+<script>
+// Dashboard data from server
+const dashboardData = {{ summary | tojson }};
+const brandId = "{{ brand.id }}";
+
+// Chart.js default configuration
+Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
+Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#6b7280';
+
+// Initialize charts when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initWeeklyTrendChart();
+    initCaffeineChart();
+    initActivityChart();
+});
+
+// Weekly Trend Chart
+function initWeeklyTrendChart() {
+    const ctx = document.getElementById('weeklyTrendChart');
+    if (!ctx) return;
+    
+    const trend = dashboardData.weekly_trend || [];
+    const labels = trend.map(d => {
+        const date = new Date(d.date);
+        return date.toLocaleDateString('en-US', { weekday: 'short' });
+    });
+    const data = trend.map(d => d.count);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Personalizations',
+                data: data,
+                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Caffeine Sensitivity Chart
+function initCaffeineChart() {
+    const ctx = document.getElementById('caffeineChart');
+    if (!ctx) return;
+    
+    const distribution = dashboardData.caffeine_distribution || {};
+    const labels = Object.keys(distribution);
+    const data = Object.values(distribution);
+    
+    const colors = {
+        'slow': '#ef4444',
+        'normal': '#22c55e',
+        'fast': '#3b82f6',
+        'unknown': '#9ca3af'
+    };
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+            datasets: [{
+                data: data,
+                backgroundColor: labels.map(l => colors[l] || '#6366f1'),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+}
+
+// Activity Time Chart
+function initActivityChart() {
+    const ctx = document.getElementById('activityChart');
+    if (!ctx) return;
+    
+    const distribution = dashboardData.activity_distribution || {};
+    const labels = Object.keys(distribution).map(k => 
+        k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    );
+    const data = Object.values(distribution);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Users',
+                data: data,
+                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#6366f1',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Refresh dashboard data
+async function refreshDashboard() {
+    try {
+        const response = await fetch(`/api/analytics/dashboard?brand_id=${brandId}`);
+        if (response.ok) {
+            const data = await response.json();
+            updateDashboard(data);
+        }
+    } catch (error) {
+        console.error('Error refreshing dashboard:', error);
+    }
+}
+
+function updateDashboard(data) {
+    // Update metrics
+    document.getElementById('metric-personalizations').textContent = data.total_personalizations;
+    document.getElementById('metric-pageviews').textContent = data.total_page_views;
+    document.getElementById('metric-conversion').textContent = data.conversion_rate + '%';
+    document.getElementById('metric-response').textContent = data.avg_response_time + 'ms';
+    document.getElementById('last-updated').textContent = data.generated_at.substring(0, 19);
+    
+    // For simplicity, reload page to update charts
+    // In production, you'd update charts directly
+    location.reload();
+}
+
+// Export functions
+function exportJSON() {
+    const dataStr = JSON.stringify(dashboardData, null, 2);
+    downloadFile(dataStr, `modulus-analytics-${brandId}-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+}
+
+function exportCSV() {
+    // Create CSV from metrics
+    let csv = 'Metric,Value\n';
+    csv += `Total Personalizations,${dashboardData.total_personalizations}\n`;
+    csv += `Total Page Views,${dashboardData.total_page_views}\n`;
+    csv += `Conversion Rate,${dashboardData.conversion_rate}%\n`;
+    csv += `Avg Response Time,${dashboardData.avg_response_time}ms\n`;
+    csv += '\nCaffeine Sensitivity,Count\n';
+    for (const [key, value] of Object.entries(dashboardData.caffeine_distribution || {})) {
+        csv += `${key},${value}\n`;
+    }
+    csv += '\nActivity Time,Count\n';
+    for (const [key, value] of Object.entries(dashboardData.activity_distribution || {})) {
+        csv += `${key},${value}\n`;
+    }
+    
+    downloadFile(csv, `modulus-analytics-${brandId}-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+}
+
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type: type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

@@ -1,161 +1,176 @@
 {% extends "base.html" %}
 
-{% block title %}{{ product.name }} - Personalize{% endblock %}
+{% block title %}Personalize - {{ product.name if product else 'Your Supplement' }}{% endblock %}
 
 {% block content %}
-<section class="form-hero">
-    <h1>{{ product.name }}</h1>
-    <p class="product-description">{{ product.description }}</p>
-    
-    {% if product.caffeine_mg %}
-    <div class="product-stats">
-        <span class="stat">
-            <strong>{{ product.caffeine_mg }}mg</strong> caffeine
-        </span>
-        {% if product.has_theanine %}
-        <span class="stat">
-            ✓ Contains L-Theanine
-        </span>
-        {% endif %}
+<div class="form-container">
+    <!-- Progress indicator -->
+    <div class="progress-bar">
+        <div class="progress-step active">
+            <span class="step-dot"></span>
+            <span class="step-label">Your Info</span>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step">
+            <span class="step-dot"></span>
+            <span class="step-label">Results</span>
+        </div>
     </div>
-    {% endif %}
-</section>
-
-{% if error %}
-<div class="error-banner">
-    <p>⚠️ {{ error }}</p>
-</div>
-{% endif %}
-
-<section class="form-section">
-    <h2>Your Profile</h2>
-    <p class="form-intro">Help us personalize your timing</p>
     
-    <form action="/{{ brand.brand_id }}/{{ product.id }}/result" method="POST" class="personalize-form">
+    <!-- Form header -->
+    <div class="form-header animate-fade-in">
+        <h1 class="form-title">Tell Us About You</h1>
+        <p class="form-subtitle">We'll calculate your personalized protocol for <strong>{{ product.name if product else 'your supplement' }}</strong>.</p>
+    </div>
+    
+    <!-- Main form -->
+    <form id="personalization-form" class="personalization-form animate-slide-up" method="POST" action="/{{ brand.brand_id if brand else 'default' }}/{{ product.product_id if product else 'default' }}/result">
+        <!-- Hidden fields for product/brand context -->
+        <input type="hidden" name="product_id" value="{{ product.product_id if product else '' }}">
+        <input type="hidden" name="brand_id" value="{{ brand.brand_id if brand else '' }}">
         
-        <!-- Weight -->
+        <!-- Weight input -->
         <div class="form-group">
-            <label for="weight_kg">
+            <label for="weight" class="form-label">
+                <span class="label-icon">⚖️</span>
                 <span class="label-text">Your Weight</span>
-                <span class="label-hint">in kilograms</span>
             </label>
-            <input 
-                type="number" 
-                id="weight_kg" 
-                name="weight_kg" 
-                min="30" 
-                max="250" 
-                step="0.5"
-                placeholder="70"
-                required
-            >
-            <span class="input-suffix">kg</span>
+            <div class="input-wrapper">
+                <input 
+                    type="number" 
+                    id="weight" 
+                    name="weight_kg" 
+                    class="form-input" 
+                    placeholder="70"
+                    min="30"
+                    max="300"
+                    step="0.5"
+                    required
+                    inputmode="decimal"
+                >
+                <span class="input-suffix">kg</span>
+            </div>
+            <span class="form-hint">Between 30 and 300 kg</span>
+            <span class="form-error" id="weight-error"></span>
         </div>
         
-        <!-- Wake Time -->
+        <!-- Wake time input -->
         <div class="form-group">
-            <label for="wake_time">
-                <span class="label-text">Wake Up Time</span>
-                <span class="label-hint">when you typically wake</span>
+            <label for="wake-time" class="form-label">
+                <span class="label-icon">🌅</span>
+                <span class="label-text">Wake-up Time</span>
             </label>
-            <input 
-                type="time" 
-                id="wake_time" 
-                name="wake_time" 
-                value="07:00"
-                required
-            >
-        </div>
-        
-        <!-- Activity Time -->
-        <div class="form-group">
-            <label for="activity_time">
-                <span class="label-text">Activity Time</span>
-                <span class="label-hint">when you want peak performance</span>
-            </label>
-            <input 
-                type="time" 
-                id="activity_time" 
-                name="activity_time" 
-                value="18:00"
-                required
-            >
-        </div>
-        
-        <!-- Caffeine Sensitivity -->
-        <div class="form-group">
-            <label for="caffeine_sensitivity">
-                <span class="label-text">Caffeine Sensitivity</span>
-                <span class="label-hint">how you typically respond to caffeine</span>
-            </label>
-            <select id="caffeine_sensitivity" name="caffeine_sensitivity" required>
-                <option value="normal" selected>Normal - 1-2 coffees feel right</option>
-                <option value="slow">Sensitive - Caffeine keeps me awake</option>
-                <option value="fast">Tolerant - I need more for effect</option>
-            </select>
-        </div>
-        
-        <!-- Advanced Options (collapsible) -->
-        <details class="advanced-options">
-            <summary>Advanced Options</summary>
-            
-            <div class="form-group">
-                <label for="sleep_target_time">
-                    <span class="label-text">Target Bedtime (optional)</span>
-                </label>
+            <div class="input-wrapper">
                 <input 
                     type="time" 
-                    id="sleep_target_time" 
-                    name="sleep_target_time"
-                    value="23:00"
+                    id="wake-time" 
+                    name="wake_time" 
+                    class="form-input time-input"
+                    value="07:00"
+                    required
                 >
             </div>
-            
-            <div class="form-group checkbox-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="has_eaten" name="has_eaten" value="true">
-                    <span>I will have eaten before taking this</span>
+            <span class="form-hint">When do you typically wake up?</span>
+            <span class="form-error" id="wake-time-error"></span>
+        </div>
+        
+        <!-- Activity time input -->
+        <div class="form-group">
+            <label for="activity-time" class="form-label">
+                <span class="label-icon">🏃</span>
+                <span class="label-text">Activity / Workout Time</span>
+            </label>
+            <div class="input-wrapper">
+                <input 
+                    type="time" 
+                    id="activity-time" 
+                    name="activity_time" 
+                    class="form-input time-input"
+                    value="18:00"
+                    required
+                >
+            </div>
+            <span class="form-hint">When do you want peak energy/focus?</span>
+            <span class="form-error" id="activity-time-error"></span>
+        </div>
+        
+        <!-- Caffeine sensitivity -->
+        <div class="form-group">
+            <label class="form-label">
+                <span class="label-icon">☕</span>
+                <span class="label-text">Caffeine Sensitivity</span>
+            </label>
+            <div class="sensitivity-options">
+                <label class="sensitivity-option">
+                    <input type="radio" name="caffeine_sensitivity" value="slow" class="sensitivity-radio">
+                    <div class="sensitivity-card">
+                        <span class="sensitivity-icon">🐢</span>
+                        <span class="sensitivity-title">Slow</span>
+                        <span class="sensitivity-desc">Coffee keeps me up at night</span>
+                    </div>
+                </label>
+                
+                <label class="sensitivity-option">
+                    <input type="radio" name="caffeine_sensitivity" value="normal" class="sensitivity-radio" checked>
+                    <div class="sensitivity-card">
+                        <span class="sensitivity-icon">🚶</span>
+                        <span class="sensitivity-title">Normal</span>
+                        <span class="sensitivity-desc">Average caffeine response</span>
+                    </div>
+                </label>
+                
+                <label class="sensitivity-option">
+                    <input type="radio" name="caffeine_sensitivity" value="fast" class="sensitivity-radio">
+                    <div class="sensitivity-card">
+                        <span class="sensitivity-icon">🐇</span>
+                        <span class="sensitivity-title">Fast</span>
+                        <span class="sensitivity-desc">Can drink coffee before bed</span>
+                    </div>
                 </label>
             </div>
-        </details>
+            <span class="form-hint">How does caffeine usually affect you?</span>
+        </div>
         
-        <!-- Submit -->
-        <button type="submit" class="submit-btn">
-            Get My Personalized Timing
-            <span class="btn-arrow">→</span>
+        <!-- Fasted state toggle -->
+        <div class="form-group">
+            <label class="toggle-container">
+                <span class="toggle-label">
+                    <span class="label-icon">🍽️</span>
+                    <span class="label-text">Taking on empty stomach?</span>
+                </span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="is-fasted" name="is_fasted" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+            <span class="form-hint">Fasted state can affect absorption</span>
+        </div>
+        
+        <!-- Submit button -->
+        <button type="submit" class="submit-button" id="submit-btn">
+            <span class="btn-text">Get My Personalized Protocol</span>
+            <span class="btn-icon">→</span>
+            <span class="btn-loading" style="display: none;">
+                <svg class="spinner" viewBox="0 0 24 24">
+                    <circle class="spinner-circle" cx="12" cy="12" r="10" fill="none" stroke-width="2"></circle>
+                </svg>
+            </span>
         </button>
         
+        <!-- Privacy note -->
+        <p class="privacy-note">
+            <span class="privacy-icon">🔒</span>
+            Your data is never stored and is used only for this calculation.
+        </p>
     </form>
-</section>
-
-<section class="disclaimer">
-    <p>
-        <strong>Disclaimer:</strong> This tool provides general timing guidance based on 
-        published research. It is not medical advice. Consult a healthcare provider before 
-        starting any supplement regimen, especially if you have health conditions or take 
-        medications.
-    </p>
-</section>
+</div>
 {% endblock %}
 
-{% block extra_scripts %}
+{% block scripts %}
 <script>
-// Auto-format weight input
-document.getElementById('weight_kg').addEventListener('blur', function() {
-    if (this.value) {
-        this.value = parseFloat(this.value).toFixed(1);
-    }
-});
-
-// Validate activity time is after wake time (or handle overnight)
-document.querySelector('.personalize-form').addEventListener('submit', function(e) {
-    const wakeTime = document.getElementById('wake_time').value;
-    const activityTime = document.getElementById('activity_time').value;
-    
-    // Just a warning, don't block submission
-    if (wakeTime > activityTime) {
-        console.log('Activity time is before wake time - assuming next day');
-    }
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize form validation
+    ModulusApp.initFormValidation('personalization-form');
 });
 </script>
 {% endblock %}
