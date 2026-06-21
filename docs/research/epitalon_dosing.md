@@ -64,6 +64,37 @@ Evidencia que respalda el mecanismo (no la hora en sí):
 
 ---
 
+## 2-BIS. Mañana vs Noche — análisis profundo (qué es más efectivo)
+
+> Pregunta directa: **¿AM o PM?** Respuesta corta: **noche**, pero por una razón distinta a la que repiten los foros.
+
+### Lo que se comenta en la comunidad (Reddit / LongeCity / foros — ANECDÓTICO)
+- **La noche es la posición mayoritaria y dominante.** "Inyectar antes de dormir" (30–60 min, en ayunas) se describe incluso como regla "no negociable" en algunas guías.
+- **El beneficio tangible reportado con dosis nocturna es el sueño:** conciliación más rápida (un usuario: dormirse en 15–20 min vs 1 h antes), menos despertares, despertar más descansado.
+- **Sueños vívidos / mayor recuerdo onírico** es uno de los efectos más citados (atribuido a más REM). Valencia **dividida**: a muchos les gusta, una minoría los vive como pesadillas/sueño más ligero.
+- **Anécdota clave de "cambio" (LongeCity) va en sentido contrario al esperado:** un usuario lo tomó **por la mañana → "sin efecto"**, cambió a **noche → "el mejor sueño en mucho tiempo"**. Es decir, el cambio mañana→noche *mejoró* las cosas.
+- **Campo "mañana" = minoría y débil:** se plantea más como dependiente del objetivo ("mañana para energía/reparación diurna") que como testimonios concretos de "me fue mejor". Mal sustentado.
+- **Facción "la hora da igual" (recurrente y explícita):** dado que la **vida media es de minutos**, varios argumentan que la sincronía intradía es irrelevante y que **solo importa completar el ciclo pulsado** (10–20 días, 2–3×/año), porque el efecto es regulatorio/genómico y persiste mucho después del aclaramiento. Esta facción **contradice directamente** al campo "hay que darlo de noche por la melatonina".
+
+### Lo que se comenta en Twitter/X e influencers de longevidad
+- **No fue posible recuperar posts de X directamente** (no indexados / inaccesibles para el crawler). La síntesis es de fuentes secundarias.
+- **La recomendación predominante en la comunidad de longevidad es noche**, sobre el argumento pineal/melatonina/circadiano. Clínicas concierge (My Concierge MD, TrufaMED, Lyfe Medical, Pulse & Remedy) e influencers de péptidos (p. ej. Jay Campbell describe el split de usuarios: unos de noche por el sueño, otros de mañana por energía) encuadran el timing nocturno.
+- **Único matiz anti-noche:** una fuente advierte que dosificar **demasiado tarde** podría desplazar la fase del sueño, sugiriendo "más temprano en el día" para evitarlo. Single-source, especulativo.
+
+### Lo que dice la cronobiología (qué tiene MÁS sentido fisiológicamente)
+- **El argumento popular "tómalo de noche para que coincida con tu melatonina" es DÉBIL.** Ese razonamiento aplica a la **melatonina exógena** (que debe estar presente en circulación en la ventana sensible de la PRC). Epitalon **NO** actúa como ligando de receptores de melatonina por la noche: actúa **aguas arriba** sobre la pineal/genoma y se **aclara en minutos**, mucho antes del pico nocturno de melatonina. La analogía con la melatonina **no se transfiere**.
+- **El efecto es un disparador transitorio**, no una presencia sostenida: mecanismo genómico/epigenético (penetra el núcleo, se une a promotores/histona H1, modula hTERT y genes circadianos como CLOCK/CRY2). La señal dispara expresión génica que **persiste horas-días** independientemente de la hora de inyección. → Esto es el argumento más fuerte de que **la hora exacta importa poco**.
+- **Ningún estudio comparó mañana vs noche.** Los protocolos monos/ancianos fueron por cursos de varios días; la hora de inyección **no** fue variable controlada ni reportada. Cualquier afirmación de timing es inferencia, no evidencia.
+
+### Veredicto razonado (mañana vs noche)
+1. **Para los outcomes de longevidad/telómeros: la hora probablemente NO cambia el resultado.** Lo que importa es **completar el ciclo** (10–20 días). Quien afirme un requisito de timing basado en evidencia está sobre-interpretando los datos.
+2. **Para el efecto que la gente realmente nota (sueño): la noche gana** — pero la razón honesta **no** es el mecanismo de telomerasa, sino que el **efecto sedante/onírico es deseable a la hora de dormir y molesto por la mañana** (somnolencia diurna). Es una razón práctica de tolerabilidad, no de eficacia metabólica.
+3. **Desempate mecanicista, suave, a favor de la noche:** la maquinaria transcripcional pineal (AANAT, síntesis de melatonina) es nocturna, y los estudios clave documentan restauración del pico **vespertino** de melatonina. Un "empujón" aguas arriba mientras ese programa arranca es al menos *coherente*. Pero la base es teórica y débil.
+
+> **Conclusión:** **Noche > mañana**, pero el verdadero motivo es **tolerabilidad/sueño**, no la telomerasa. Para los beneficios de longevidad, lo que de verdad pesa es **la consistencia del ciclo completo**, no si lo pinchas a las 8:00 o a las 22:00. El campo "la hora da igual" tiene de hecho la mejor base farmacológica; la noche es la elección pragmática ganadora por el perfil de efectos, no por evidencia de mayor eficacia.
+
+---
+
 ## 3. Vía de administración y biodisponibilidad
 
 - **Inyección SC/IM = estándar.** Casi toda la investigación publicada usó inyección; la SC se describe como la vía recomendada (absorción directa, alta biodisponibilidad). Posible reacción inflamatoria local en el sitio de inyección.
