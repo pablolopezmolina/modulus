@@ -37,6 +37,7 @@ ENV/
 storage/results/*
 storage/cache/*
 storage/reports/*
+storage/wearable/*
 !storage/results/.gitkeep
 !storage/cache/.gitkeep
 !storage/reports/.gitkeep

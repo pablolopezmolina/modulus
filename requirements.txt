@@ -16,3 +16,6 @@ uvicorn>=0.22
 # Reporting (for later phases)
 matplotlib>=3.7
 reportlab>=4.0
+
+# Wearable / Garmin health analytics
+garmin-fit-sdk>=21.0  # Official pure-Python FIT decoder (Fenix 5 Plus ingestion)
