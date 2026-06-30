@@ -7,7 +7,6 @@
 # Testing
 pytest>=7.0
 pytest-cov>=4.0
-httpx>=0.24  # FastAPI TestClient (wearable API tests)
 
 # Linting
 flake8>=6.0
